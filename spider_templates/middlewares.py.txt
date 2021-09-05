@@ -1,0 +1,10 @@
+
+
+from w3lib.http import basic_auth_header
+
+class CustomProxyMiddleware(object):
+	def process_request(self, request, spider):
+		request.meta['proxy'] = "https://megaproxy.rotating.proxyrack.net:222"
+		request.headers['Proxy-Authorization'] = basic_auth_header(
+			'eprensa', 'tecnicos')
+

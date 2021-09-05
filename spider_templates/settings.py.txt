@@ -1,0 +1,37 @@
+
+
+#?delete_point
+
+
+domainNeedsProxy = ?domain_proxy_flag
+DEFAULT_REQUEST_HEADERS = {
+    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+    'Connection': 'keep-alive', 'Sec-Fetch-Mode': 'navigate',
+    'Sec-Fetch-Site': 'cross-site', 'cache-control': 'no-cache'
+}
+DOWNLOADER_CLIENTCONTEXTFACTORY = '?spider_name_1.context.ScrapyClientContextFactory'
+if domainNeedsProxy == True:
+    DOWNLOADER_MIDDLEWARES = {
+    	'?spider_name_1.middlewares.CustomProxyMiddleware': 350
+    	,'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 400
+    }
+EXTENSIONS = {
+	'scrapy.extensions.closespider.CloseSpider': 10,
+}
+ROBOTSTXT_OBEY=False
+RANDOMIZE_DOWNLOAD_DELAY = True
+DOWNLOAD_TIMEOUT = 60
+COOKIES_ENABLED = ?domain_cookie_flag
+COOKIES_DEBUG = True
+DEPTH_PRIORITY = 1
+SCHEDULER_DISK_QUEUE = 'scrapy.squeues.PickleFifoDiskQueue'
+SCHEDULER_MEMORY_QUEUE = 'scrapy.squeues.FifoMemoryQueue'
+LOG_ENABLED = False
+HTTPCACHE_ENABLED = False
+AUTOTHROTTLE_ENABLED = True
+AUTOTHROTTLE_START_DELAY = 0.1
+AUTOTHROTTLE_MAX_DELAY = 0.5
+DEPTH_LIMIT = 4
+RETRY_ENABLED = False
+REDIRECT_ENABLED = True
