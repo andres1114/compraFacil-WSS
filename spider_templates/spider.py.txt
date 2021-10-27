@@ -285,7 +285,7 @@ class ?spider_name_1(CrawlSpider):
         smtp_email_object.quit()
 
     def create_epfile(self, num, url, html, domain_name, payprotected, codec):
-        filename = domain_name + '__productos_scrapy' + '_' + (('000' + str(num))[-3:ss])
+        filename = domain_name + '__productos_scrapy' + '_' + (('000' + str(num))[-3:])
 
         if codec == "utf8":
             f = open(current_script_dir + '/' + epfile_foldername + '/' + filename, "w+", encoding="utf-8")
@@ -312,7 +312,7 @@ class ?spider_name_1(CrawlSpider):
 
         verbose(outputMode=logOutputMode,outputMessage="Inserting the epfile values into the epfile_log database...", logName="spider")
         queryArgs = (ep_file_content,)
-        query = 'INSERT INTO epfile_log (domain, filename, path, server_date, python_date_ny, python_date_mdr, page_grab_cmd, epfile_content) VALUES ("' + domain_name + '", "' + filename + '", "storage2:/mnt/nfs/digital_news/", CURRENT_DATE, CURRENT_DATE, CURRENT_DATE, "' + rsync_cmd + '", ?)'
+        query = 'INSERT INTO epfile_log (domain, filename, path, server_date, python_date_ny, python_date_mdr, page_grab_cmd, epfile_content) VALUES ("' + domain_name + '", "' + filename + '","storage2:/mnt/nfs/digital_news/", CURRENT_DATE, CURRENT_DATE, CURRENT_DATE, "' + rsync_cmd + '", ?)'
         verbose(outputMode=logOutputMode, outputMessage="Used query: " + query, logName="spider")
 
         queryData = dbConnectionExecuteQuery(connectionObject=db_connection_epfilelog, query=query, queryArgs=queryArgs,queryReference="spider_query_15",errorOutputMode=logOutputMode)
@@ -724,8 +724,7 @@ class ?spider_name_1(CrawlSpider):
                             self.update(self.generated_epfiles + 1)
                             verbose(outputMode=logOutputMode, outputMessage="Done", logName="spider")
 
-                            date_folder = datetime.utcfromtimestamp(self.timestamp_newyork_array[self.dateIndex]).strftime('%Y%m%d')
-                            query = "INSERT INTO epfiles_queue (ep_file_name ,date_folder, has_been_proccesed, is_in_process) VALUES ('" + ep_file + "','" + str(date_folder) + "', 0, 0)"
+                            query = "INSERT INTO epfiles_queue (ep_file_name ,date_folder, has_been_proccesed, is_in_process) VALUES ('" + ep_file + "',CURRENT_DATE, 0, 0)"
                             dbConnectionExecuteQuery(connectionObject=db_connection_miscdb,query=query, queryArgs={},queryReference="spider_query_29",errorOutputMode=logOutputMode)
 
                             if self.limitToSendArticlesToESCounterInSeconds == 0:
