@@ -55,7 +55,6 @@ def createDbConnection(**kwargs):
         try:
             import MySQLdb
             db_connection = MySQLdb.connect(host=db_host, user=db_user, password=db_pass, dbname=db_name)
-            db_connection.set_client_encoding("utf8")
         except Exception as e:
             errorMessage = "ERR_CANT_CREATE_DB_CONNECTION " + str(e)
             verbose(outputMode=kwargs.get('errorOutputMode'), outputMessage=errorMessage,logName="spider_db_connection")
