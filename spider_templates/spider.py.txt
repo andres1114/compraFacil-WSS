@@ -661,6 +661,7 @@ class ?spider_name_1(CrawlSpider):
                     date_str = body_text_ascii.strip()[start:end]
 
                     for temp_date_format in self.date_format.split("|"):
+                        verbose(outputMode=logOutputMode, outputMessage="Testing date_str against temp_date_format ("+date_str+", "+temp_date_format+")", logName="spider")
                         if temp_date_format.lower() in date_str.lower():
                             to_use_date_format = temp_date_format
                             found_date_flag = True
@@ -682,92 +683,89 @@ class ?spider_name_1(CrawlSpider):
 
             else:
                 found_date_flag = False
-                for y in range(len(self.timestamp_newyork_array)):
-                    tempFormatedDate = to_use_date_format
-                    verbose(outputMode=logOutputMode, outputMessage="To match text: " + tempFormatedDate, logName="spider")
-                    if tempFormatedDate.lower() in date_str.lower():
-                        found_date_flag = True
-                        self.dateIndex = y
+                tempFormatedDate = to_use_date_format
+                verbose(outputMode=logOutputMode, outputMessage="To match text: " + tempFormatedDate, logName="spider")
+                if tempFormatedDate.lower() in date_str.lower():
+                    found_date_flag = True
 
-                        # verbose(outputMode=logOutputMode, outputMessage="Checking the url in the dont_grab_log table...", logName="spider")
-                        # queryArgs = {
-                        #     "url": newUrl
-                        #     , "text_length": len(body_text_ascii)
-                        # }
-                        # query = 'SELECT add_dgl_url(%(url)s,%(text_length)s)'
-                        # queryData = dbConnectionExecuteQuery(connectionObject=db_connection_dontgrablog, query=query, queryArgs=queryArgs, queryReference="spider_query_28",  errorOutputMode=logOutputMode)
-                        # verbose(outputMode=logOutputMode, outputMessage="Done", logName="spider")
+                    # verbose(outputMode=logOutputMode, outputMessage="Checking the url in the dont_grab_log table...", logName="spider")
+                    # queryArgs = {
+                    #     "url": newUrl
+                    #     , "text_length": len(body_text_ascii)
+                    # }
+                    # query = 'SELECT add_dgl_url(%(url)s,%(text_length)s)'
+                    # queryData = dbConnectionExecuteQuery(connectionObject=db_connection_dontgrablog, query=query, queryArgs=queryArgs, queryReference="spider_query_28",  errorOutputMode=logOutputMode)
+                    # verbose(outputMode=logOutputMode, outputMessage="Done", logName="spider")
 
-                        # if queryData[0][0][0] == False or queryData[0][0][0] == "False" or queryData[0][0][0] == 0:
-                        if True:
+                    # if queryData[0][0][0] == False or queryData[0][0][0] == "False" or queryData[0][0][0] == 0:
+                    if True:
 
-                            #verbose(outputMode=logOutputMode, outputMessage="The url has not been added to the table", logName="spider")
-                            verbose(outputMode=logOutputMode, outputMessage="Checking for login nodes...",logName="spider")
-                            if self.cookie_detection_node != "":
-                                loginwall_detected = "false"
-                                for node in self.cookie_detection_node.split("|"):
-                                    if node.strip() in body_text_ascii.strip():
-                                        loginwall_detected = "true"
-                                        verbose(outputMode=logOutputMode, outputMessage="The current url's body has a matching login node, '" + node + "'", logName="spider")
-                                        break
-                                    else:
-                                        verbose(outputMode=logOutputMode,outputMessage="No login node found for '" + node + "'", logName="spider")
-                            else:
-                                verbose(outputMode=logOutputMode, outputMessage="No login node found",logName="spider")
-                                loginwall_detected = "false"
-
-                            if loginwall_detected == "false":
-                                ep_file_flag = False
-                                ep_file_failed_flag = False
-                                while ep_file_flag == False:
-                                    try:
-                                        if ep_file_failed_flag == False:
-                                            verbose(outputMode=logOutputMode,outputMessage="Creating the ep_file...",logName="spider")
-                                            verbose(outputMode=logOutputMode, outputMessage="Using UTF-8 codec", logName="spider")
-                                            ep_file = self.create_epfile(self.generated_epfiles, newUrl, body_text_utf8, self.cf_domain_name, self.timestamp_madrid_array[self.dateIndex], self.timestamp_newyork_array[self.dateIndex], "false", "utf8")
-                                            ep_file_flag = True
-                                        else:
-                                            verbose(outputMode=logOutputMode,outputMessage="Creating the ep_file...",logName="spider")
-                                            verbose(outputMode=logOutputMode, outputMessage="Using ASCII codec",logName="spider")
-                                            ep_file = self.create_epfile(self.generated_epfiles, newUrl, body_text_ascii, self.cf_domain_name, self.timestamp_madrid_array[self.dateIndex], self.timestamp_newyork_array[self.dateIndex], "false", "ascii")
-                                            ep_file_flag = True
-
-                                    except Exception as e:
-                                        if ep_file_failed_flag == False:
-                                            verbose(outputMode=logOutputMode, outputMessage="UTF-8 codec has failed for URL '" + newUrl + "', switching to ASCII",logName="spider")
-                                            ep_file_failed_flag = True
-                                        else:
-                                            verbose(outputMode=logOutputMode,outputMessage="No codec worked for URL '" + newUrl + "', no ep_file was created",logName="spider")
-                                            ep_file_flag = True
-
-                                self.update(self.generated_epfiles + 1)
-                                verbose(outputMode=logOutputMode, outputMessage="Done", logName="spider")
-
-                                date_folder = datetime.utcfromtimestamp(self.timestamp_newyork_array[self.dateIndex]).strftime('%Y%m%d')
-                                query = "INSERT INTO epfiles_queue (ep_file_name ,date_folder, has_been_proccesed, is_in_process) VALUES ('" + ep_file + "','" + str(date_folder) + "', 0, 0)"
-                                dbConnectionExecuteQuery(connectionObject=db_connection_miscdb,query=query, queryArgs={},queryReference="spider_query_29",errorOutputMode=logOutputMode)
-
-                                if self.limitToSendArticlesToESCounterInSeconds == 0:
-                                    self.limitToSendArticlesToESCounterInSeconds = time.time()
-
-                                if self.limitToSendArticlesToESCounter >= self.limitToSendArticlesToES or (time.time() - self.limitToSendArticlesToESCounterInSeconds) > self.limitToSendArticlesToESInSeconds:
-                                    #self.execute_repair_script()
-                                    self.limitToSendArticlesToESCounter = 0
-                                    self.limitToSendArticlesToESCounterInSeconds = time.time()
+                        #verbose(outputMode=logOutputMode, outputMessage="The url has not been added to the table", logName="spider")
+                        verbose(outputMode=logOutputMode, outputMessage="Checking for login nodes...",logName="spider")
+                        if self.cookie_detection_node != "":
+                            loginwall_detected = "false"
+                            for node in self.cookie_detection_node.split("|"):
+                                if node.strip() in body_text_ascii.strip():
+                                    loginwall_detected = "true"
+                                    verbose(outputMode=logOutputMode, outputMessage="The current url's body has a matching login node, '" + node + "'", logName="spider")
+                                    break
                                 else:
-                                    self.limitToSendArticlesToESCounter = (self.limitToSendArticlesToESCounter + 1)
+                                    verbose(outputMode=logOutputMode,outputMessage="No login node found for '" + node + "'", logName="spider")
+                        else:
+                            verbose(outputMode=logOutputMode, outputMessage="No login node found",logName="spider")
+                            loginwall_detected = "false"
 
+                        if loginwall_detected == "false":
+                            ep_file_flag = False
+                            ep_file_failed_flag = False
+                            while ep_file_flag == False:
+                                try:
+                                    if ep_file_failed_flag == False:
+                                        verbose(outputMode=logOutputMode,outputMessage="Creating the ep_file...",logName="spider")
+                                        verbose(outputMode=logOutputMode, outputMessage="Using UTF-8 codec", logName="spider")
+                                        ep_file = self.create_epfile(self.generated_epfiles, newUrl, body_text_utf8, self.cf_domain_name, self.timestamp_madrid_array[self.dateIndex], self.timestamp_newyork_array[self.dateIndex], "false", "utf8")
+                                        ep_file_flag = True
+                                    else:
+                                        verbose(outputMode=logOutputMode,outputMessage="Creating the ep_file...",logName="spider")
+                                        verbose(outputMode=logOutputMode, outputMessage="Using ASCII codec",logName="spider")
+                                        ep_file = self.create_epfile(self.generated_epfiles, newUrl, body_text_ascii, self.cf_domain_name, self.timestamp_madrid_array[self.dateIndex], self.timestamp_newyork_array[self.dateIndex], "false", "ascii")
+                                        ep_file_flag = True
+
+                                except Exception as e:
+                                    if ep_file_failed_flag == False:
+                                        verbose(outputMode=logOutputMode, outputMessage="UTF-8 codec has failed for URL '" + newUrl + "', switching to ASCII",logName="spider")
+                                        ep_file_failed_flag = True
+                                    else:
+                                        verbose(outputMode=logOutputMode,outputMessage="No codec worked for URL '" + newUrl + "', no ep_file was created",logName="spider")
+                                        ep_file_flag = True
+
+                            self.update(self.generated_epfiles + 1)
+                            verbose(outputMode=logOutputMode, outputMessage="Done", logName="spider")
+
+                            date_folder = datetime.utcfromtimestamp(self.timestamp_newyork_array[self.dateIndex]).strftime('%Y%m%d')
+                            query = "INSERT INTO epfiles_queue (ep_file_name ,date_folder, has_been_proccesed, is_in_process) VALUES ('" + ep_file + "','" + str(date_folder) + "', 0, 0)"
+                            dbConnectionExecuteQuery(connectionObject=db_connection_miscdb,query=query, queryArgs={},queryReference="spider_query_29",errorOutputMode=logOutputMode)
+
+                            if self.limitToSendArticlesToESCounterInSeconds == 0:
+                                self.limitToSendArticlesToESCounterInSeconds = time.time()
+
+                            if self.limitToSendArticlesToESCounter >= self.limitToSendArticlesToES or (time.time() - self.limitToSendArticlesToESCounterInSeconds) > self.limitToSendArticlesToESInSeconds:
+                                #self.execute_repair_script()
+                                self.limitToSendArticlesToESCounter = 0
+                                self.limitToSendArticlesToESCounterInSeconds = time.time()
                             else:
-                                self.remove_url_from_visited_url_list(newUrl)
-                                if close_spider_called == False:
-                                    self.diasble_spider_due_cookies(response.url)
+                                self.limitToSendArticlesToESCounter = (self.limitToSendArticlesToESCounter + 1)
 
                         else:
-                            verbose(outputMode=logOutputMode, outputMessage="The url has already been added to the table, skipping", logName="spider")
-                            self.datedUrls = self.datedUrls + 1
-                        break
+                            self.remove_url_from_visited_url_list(newUrl)
+                            if close_spider_called == False:
+                                self.diasble_spider_due_cookies(response.url)
+
                     else:
-                        verbose(outputMode=logOutputMode, outputMessage="Product doesn't match the text " + tempFormatedDate, logName="spider")
+                        verbose(outputMode=logOutputMode, outputMessage="The url has already been added to the table, skipping", logName="spider")
+                        self.datedUrls = self.datedUrls + 1
+                else:
+                    verbose(outputMode=logOutputMode, outputMessage="Product doesn't match the text " + tempFormatedDate, logName="spider")
 
                 if found_date_flag == False:
                     verbose(outputMode=logOutputMode, outputMessage="There's no text match for this product, skipping",logName="spider")
