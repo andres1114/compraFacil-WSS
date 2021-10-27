@@ -630,7 +630,7 @@ class ?spider_name_1(CrawlSpider):
 
         if tagged is None:
             if (time.time() - self.limitToCloseSpiderInSeconds) > self.maxAmountOfSecondsPassed:
-                if self.limitToSendArticlesToESCounter > 0:
+                #if self.limitToSendArticlesToESCounter > 0:
                     #self.execute_repair_script()
 
                 raise CloseSpider('SPIDER_TIMEOUT_REACHED')
@@ -809,7 +809,7 @@ class ?spider_name_1(CrawlSpider):
         verbose(outputMode=logOutputMode, outputMessage="Scraped pages counter: " + str(self.scrapedPages), logName="spider")
 
         if (time.time() - self.limitToCloseSpiderInSeconds) > self.maxAmountOfSecondsPassed:
-            if self.limitToSendArticlesToESCounter > 0:
+            #if self.limitToSendArticlesToESCounter > 0:
                 #self.execute_repair_script()
 
             raise CloseSpider('SPIDER_TIMEOUT_REACHED')
