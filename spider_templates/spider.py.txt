@@ -118,8 +118,7 @@ log_database_filename = "epfile_log.sqlite3"
 epfile_paywall_tester_filename = "ep_file_paywall_tester.py"
 epfile_foldername = "temp_ep_files"
 
-db_connection_eprensa = createDbConnection(db_type='postgres', db_host='rwpgsql', db_user='tsg',db_pass='newPOST53', db_name='eprensa')
-db_connection_dontgrablog = createDbConnection(db_type='postgres', db_host='epdontgrablog', db_user='tsg', db_pass='newPOST53', db_name='paperdata')
+db_connection_mysql = createDbConnection(db_type='mysql', db_host='192.168.10.13', db_user='root',db_pass='admin', db_name='compraFacil')
 db_connection_epfilelog = createDbConnection(db_type='sqlite',db_host=current_script_dir + "/" + log_database_filename, db_user='',db_pass='', db_name='')
 db_connection_miscdb = createDbConnection(db_type='sqlite',db_host=current_script_dir + "/" + misc_database_filename, db_user='',db_pass='', db_name='')
 
@@ -204,7 +203,7 @@ def get_site_map():
     return sitemap
 
 
-class ?spider_name_1Spider(CrawlSpider):
+class ?spider_name_1(CrawlSpider):
 
     #Set the domain id
     domainId = ?domainId
@@ -343,7 +342,7 @@ class ?spider_name_1Spider(CrawlSpider):
     def execute_repair_script(self):
         verbose(outputMode=logOutputMode, outputMessage="Executing epfile tester for paid articles", logName="spider")
 
-        shell_command = "python3.6 " + current_script_dir + "/" + epfile_foldername + "/" + epfile_paywall_tester_filename + " " + str(self.domainId) + " " + str(logOutputMode) + " &> /dev/null &"
+        shell_command = "python3 " + current_script_dir + "/" + epfile_foldername + "/" + epfile_paywall_tester_filename + " " + str(self.domainId) + " " + str(logOutputMode) + " &> /dev/null &"
         verbose(outputMode=logOutputMode, outputMessage="Command to use: '" + shell_command + "'",logName="spider")
         commandResponse = subprocess.check_output(shell_command, shell=True)
         verbose(outputMode=logOutputMode, outputMessage="Done", logName="spider")
@@ -380,32 +379,32 @@ class ?spider_name_1Spider(CrawlSpider):
         verbose(outputMode=logOutputMode, outputMessage="Updating the status of the spider in the database...",logName="spider")
         queryArgs = {"domain_id": self.domainId}
         query = "UPDATE scrapy_spiders SET spider_status = 'ERROR: cookies have expired', active = FALSE WHERE domain_id = %(domain_id)s"
-        dbConnectionExecuteQuery(connectionObject=db_connection_eprensa, query=query, queryArgs=queryArgs,queryReference="spider_query_18", errorOutputMode=logOutputMode)
+        dbConnectionExecuteQuery(connectionObject=db_connection_mysql, query=query, queryArgs=queryArgs,queryReference="spider_query_18", errorOutputMode=logOutputMode)
         verbose(outputMode=logOutputMode, outputMessage="Done", logName="spider")
         verbose(outputMode=logOutputMode, outputMessage="Updating the status of the cookies in the database...",logName="spider")
         queryArgs = {"domain_id": self.domainId}
         query = "UPDATE scrapy_headers SET header_status = 'ERROR: cookies have expired', active = FALSE WHERE domain_id = %(domain_id)s AND header_type = 1"
-        dbConnectionExecuteQuery(connectionObject=db_connection_eprensa, query=query, queryArgs=queryArgs,queryReference="spider_query_19", errorOutputMode=logOutputMode)
+        dbConnectionExecuteQuery(connectionObject=db_connection_mysql, query=query, queryArgs=queryArgs,queryReference="spider_query_19", errorOutputMode=logOutputMode)
         verbose(outputMode=logOutputMode, outputMessage="Done", logName="spider")
         verbose(outputMode=logOutputMode, outputMessage="Sending the email to alert the stauts of the coookies...",logName="spider")
 
         # <email block>
         # Create the email subject
-        email_subject = "Scrapy Cookie vencida | " + str(self.eprensa_domain_name) + " | " + str(self.domainId)
+        email_subject = "Scrapy Cookie vencida | " + str(self.cf_domain_name) + " | " + str(self.domainId)
 
         # Start the email body to be sent with the alert
         email_html_body = "<div style='font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,\"Helvetica Neue\",Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\",\"Segoe UI Symbol\",\"Noto Color Emoji\"'>";
 
         email_html_body += "<h2>Se ha vencido las cookies</h2>"
         email_html_body += "<hr/>"
-        email_html_body += "<p>Las cookies de la Scrapy spider " + str(self.eprensa_domain_name) + " (" + str(self.name) + ") han caducado</p>"
-        email_html_body += "<p><b>Dominio:</b> " + str(self.eprensa_domain_name) + "</p>"
+        email_html_body += "<p>Las cookies de la Scrapy spider " + str(self.cf_domain_name) + " (" + str(self.name) + ") han caducado</p>"
+        email_html_body += "<p><b>Dominio:</b> " + str(self.cf_domain_name) + "</p>"
         email_html_body += "<p><b>ID:</b> " + str(self.domainId) + "</p>"
         email_html_body += "<p><b>URL de deteccion:</b> " + url + "</p>"
         email_html_body += "<br/>"
         email_html_body += "<p>La spider ha sido desabilitada y no se ejcutara mas hasta que la(s) cookie(s) sea(n) actualizada(s)</p>"
 
-        self.send_email(email_subject=email_subject, email_from=self.email_sender, email_to=self.email_recipients,email_html_message=email_html_body)
+        #self.send_email(email_subject=email_subject, email_from=self.email_sender, email_to=self.email_recipients,email_html_message=email_html_body)
         # <email block>
         verbose(outputMode=logOutputMode, outputMessage="Done",logName="spider")
         verbose(outputMode=logOutputMode, outputMessage="closing the spider", logName="spider")
@@ -426,21 +425,12 @@ class ?spider_name_1Spider(CrawlSpider):
 
     timestamp_madrid_array = []
     timestamp_newyork_array = []
-    pastDaysToSearch = 1
-
-    timestamp_madrid_array.append(now_timestamp_madrid)
-    timestamp_newyork_array.append(now_timestamp_newyork)
-
-    if pastDaysToSearch > 0:
-        for x in range(pastDaysToSearch):
-            timestamp_madrid_array.append((now_timestamp_madrid - ((60 * 60) * (24 * (x + 1)))))
-            timestamp_newyork_array.append((now_timestamp_newyork - ((60 * 60) * (24 * (x + 1)))))
 
     dateIndex = 0
 
     date_format = '?date_format'
     generated_epfiles = 0
-    eprensa_domain_name = '?spider_name_2'
+    cf_domain_name = '?spider_name_2'
     name = '?spider_name_1'
     allowed_domains = ['?spider_name_2']
     domain_url = '?domain_full_url'
@@ -460,7 +450,7 @@ class ?spider_name_1Spider(CrawlSpider):
     spiderId = random.getrandbits(128)
     spiderExecutionMode = 0
 
-    email_sender = "info@eprensa.com"
+    email_sender = "polako_1114@hotmail.es"
     email_recipients = ?spider_email_recipants
 
     daysToDeletedVisitedUrlsLog = 7
@@ -527,7 +517,7 @@ class ?spider_name_1Spider(CrawlSpider):
     @classmethod
 
     def from_crawler(cls, crawler, *args, **kwargs):
-        spider = super(?spider_name_1Spider, cls).from_crawler(crawler, *args, **kwargs)
+        spider = super(?spider_name_1, cls).from_crawler(crawler, *args, **kwargs)
         crawler.signals.connect(spider.spider_closed, signals.spider_closed)
         return spider
 
@@ -555,7 +545,7 @@ class ?spider_name_1Spider(CrawlSpider):
         dbConnectionExecuteQuery(connectionObject=db_connection_epfilelog, query=query, queryArgs={}, queryReference="spider_query_22",  errorOutputMode=logOutputMode)
         verbose(outputMode=logOutputMode, outputMessage="Done", logName="spider")
 
-        self.execute_repair_script()
+        #self.execute_repair_script()
         update_spider_mode()
         update_site_map()
 
@@ -634,14 +624,14 @@ class ?spider_name_1Spider(CrawlSpider):
             self.limitToSendArticlesToESCounterInSeconds = time.time()
 
         if (time.time() - self.limitToSendArticlesToESCounterInSeconds) > self.limitToSendArticlesToESInSeconds and self.limitToSendArticlesToESCounter > 0:
-            self.execute_repair_script()
+            #self.execute_repair_script()
             self.limitToSendArticlesToESCounter = 0
             self.limitToSendArticlesToESCounterInSeconds = time.time()
 
         if tagged is None:
             if (time.time() - self.limitToCloseSpiderInSeconds) > self.maxAmountOfSecondsPassed:
                 if self.limitToSendArticlesToESCounter > 0:
-                    self.execute_repair_script()
+                    #self.execute_repair_script()
 
                 raise CloseSpider('SPIDER_TIMEOUT_REACHED')
 
@@ -672,27 +662,20 @@ class ?spider_name_1Spider(CrawlSpider):
                     date_str = body_text_ascii.strip()[start:end]
 
                     for temp_date_format in self.date_format.split("|"):
-                        for y in range(len(self.timestamp_newyork_array)):
-                            tempFormatedDate = datetime.utcfromtimestamp(self.timestamp_newyork_array[y]).strftime(temp_date_format).lower()
-                            tempFormatedDate = re.sub(r"^0", "", tempFormatedDate)
-                            if tempFormatedDate in date_str.lower():
-                                to_use_date_format = temp_date_format
-                                tempDateIndex = y
-                                found_date_flag = True
-                                break
-
-                        if found_date_flag == True:
+                        if temp_date_format in date_str.lower():
+                            to_use_date_format = temp_date_format
+                            found_date_flag = True
                             break
 
                     if to_use_date_format is None:
-                        verbose(outputMode=logOutputMode,outputMessage="No suitable date format was found for " + tempFormatedDate + ", either the date is too old or the format is not configured, switching to default (" + self.date_format.split("|")[0] + ")",logName="spider")
+                        verbose(outputMode=logOutputMode,outputMessage="No suitable text was found, switching to default (" + self.date_format.split("|")[0] + ")",logName="spider")
                         to_use_date_format = self.date_format.split("|")[0]
 
-                    verbose(outputMode=logOutputMode, outputMessage="Article date: " + date_str, logName="spider")
+                    verbose(outputMode=logOutputMode, outputMessage="Product text: " + date_str, logName="spider")
                     break
 
                 except ValueError:
-                    verbose(outputMode=logOutputMode, outputMessage="This url doesn't have a date field for " + date_start_str_array[x], logName="spider")
+                    verbose(outputMode=logOutputMode, outputMessage="This url doesn't have a text field for " + date_start_str_array[x], logName="spider")
                     date_str = False
 
             if date_str == False:
@@ -701,25 +684,25 @@ class ?spider_name_1Spider(CrawlSpider):
             else:
                 found_date_flag = False
                 for y in range(len(self.timestamp_newyork_array)):
-                    tempFormatedDate = datetime.utcfromtimestamp(self.timestamp_newyork_array[y]).strftime(to_use_date_format).lower()
-                    tempFormatedDate = re.sub(r"^0", "", tempFormatedDate)
-                    verbose(outputMode=logOutputMode, outputMessage="To match date: " + tempFormatedDate, logName="spider")
+                    tempFormatedDate = to_use_date_format
+                    verbose(outputMode=logOutputMode, outputMessage="To match text: " + tempFormatedDate, logName="spider")
                     if tempFormatedDate in date_str.lower():
                         found_date_flag = True
                         self.dateIndex = y
 
-                        verbose(outputMode=logOutputMode, outputMessage="Checking the url in the dont_grab_log table...", logName="spider")
-                        queryArgs = {
-                            "url": newUrl
-                            , "text_length": len(body_text_ascii)
-                        }
-                        query = 'SELECT add_dgl_url(%(url)s,%(text_length)s)'
-                        queryData = dbConnectionExecuteQuery(connectionObject=db_connection_dontgrablog, query=query, queryArgs=queryArgs, queryReference="spider_query_28",  errorOutputMode=logOutputMode)
-                        verbose(outputMode=logOutputMode, outputMessage="Done", logName="spider")
+                        # verbose(outputMode=logOutputMode, outputMessage="Checking the url in the dont_grab_log table...", logName="spider")
+                        # queryArgs = {
+                        #     "url": newUrl
+                        #     , "text_length": len(body_text_ascii)
+                        # }
+                        # query = 'SELECT add_dgl_url(%(url)s,%(text_length)s)'
+                        # queryData = dbConnectionExecuteQuery(connectionObject=db_connection_dontgrablog, query=query, queryArgs=queryArgs, queryReference="spider_query_28",  errorOutputMode=logOutputMode)
+                        # verbose(outputMode=logOutputMode, outputMessage="Done", logName="spider")
 
-                        if queryData[0][0][0] == False or queryData[0][0][0] == "False" or queryData[0][0][0] == 0:
+                        # if queryData[0][0][0] == False or queryData[0][0][0] == "False" or queryData[0][0][0] == 0:
+                        if True:
 
-                            verbose(outputMode=logOutputMode, outputMessage="The url has not been added to the table", logName="spider")
+                            #verbose(outputMode=logOutputMode, outputMessage="The url has not been added to the table", logName="spider")
                             verbose(outputMode=logOutputMode, outputMessage="Checking for login nodes...",logName="spider")
                             if self.cookie_detection_node != "":
                                 loginwall_detected = "false"
@@ -742,12 +725,12 @@ class ?spider_name_1Spider(CrawlSpider):
                                         if ep_file_failed_flag == False:
                                             verbose(outputMode=logOutputMode,outputMessage="Creating the ep_file...",logName="spider")
                                             verbose(outputMode=logOutputMode, outputMessage="Using UTF-8 codec", logName="spider")
-                                            ep_file = self.create_epfile(self.generated_epfiles, newUrl, body_text_utf8, self.eprensa_domain_name, self.timestamp_madrid_array[self.dateIndex], self.timestamp_newyork_array[self.dateIndex], "false", "utf8")
+                                            ep_file = self.create_epfile(self.generated_epfiles, newUrl, body_text_utf8, self.cf_domain_name, self.timestamp_madrid_array[self.dateIndex], self.timestamp_newyork_array[self.dateIndex], "false", "utf8")
                                             ep_file_flag = True
                                         else:
                                             verbose(outputMode=logOutputMode,outputMessage="Creating the ep_file...",logName="spider")
                                             verbose(outputMode=logOutputMode, outputMessage="Using ASCII codec",logName="spider")
-                                            ep_file = self.create_epfile(self.generated_epfiles, newUrl, body_text_ascii, self.eprensa_domain_name, self.timestamp_madrid_array[self.dateIndex], self.timestamp_newyork_array[self.dateIndex], "false", "ascii")
+                                            ep_file = self.create_epfile(self.generated_epfiles, newUrl, body_text_ascii, self.cf_domain_name, self.timestamp_madrid_array[self.dateIndex], self.timestamp_newyork_array[self.dateIndex], "false", "ascii")
                                             ep_file_flag = True
 
                                     except Exception as e:
@@ -769,7 +752,7 @@ class ?spider_name_1Spider(CrawlSpider):
                                     self.limitToSendArticlesToESCounterInSeconds = time.time()
 
                                 if self.limitToSendArticlesToESCounter >= self.limitToSendArticlesToES or (time.time() - self.limitToSendArticlesToESCounterInSeconds) > self.limitToSendArticlesToESInSeconds:
-                                    self.execute_repair_script()
+                                    #self.execute_repair_script()
                                     self.limitToSendArticlesToESCounter = 0
                                     self.limitToSendArticlesToESCounterInSeconds = time.time()
                                 else:
@@ -785,10 +768,10 @@ class ?spider_name_1Spider(CrawlSpider):
                             self.datedUrls = self.datedUrls + 1
                         break
                     else:
-                        verbose(outputMode=logOutputMode, outputMessage="Article doesn't match the date " + tempFormatedDate, logName="spider")
+                        verbose(outputMode=logOutputMode, outputMessage="Product doesn't match the text " + tempFormatedDate, logName="spider")
 
                 if found_date_flag == False:
-                    verbose(outputMode=logOutputMode, outputMessage="There's no date match for this article, skipping",logName="spider")
+                    verbose(outputMode=logOutputMode, outputMessage="There's no text match for this product, skipping",logName="spider")
                     self.datedUrls = self.datedUrls + 1
 
                 valid_url_found_in = self.clean_url(response.request.headers.get('Referer', None).decode('utf-8'))
@@ -827,6 +810,6 @@ class ?spider_name_1Spider(CrawlSpider):
 
         if (time.time() - self.limitToCloseSpiderInSeconds) > self.maxAmountOfSecondsPassed:
             if self.limitToSendArticlesToESCounter > 0:
-                self.execute_repair_script()
+                #self.execute_repair_script()
 
             raise CloseSpider('SPIDER_TIMEOUT_REACHED')

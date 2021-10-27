@@ -40,13 +40,13 @@ if int(commandResponse) > 2:
 
 functions.verbose(outputMode=logOutputMode, outputMessage="Creating the DB connection objects...", logName="main")
 #Create the databas connection objects
-db_connection_eppostgres = db_connection.createDbConnection(db_type='postgres', db_host='rwpgsql', db_user='tsg', db_pass='newPOST53', db_name='eprensa')
+db_connection_mysql = db_connection.createDbConnection(db_type='mysql', db_host='192.168.10.13', db_user='root', db_pass='admin', db_name='compraFacil')
 functions.verbose(outputMode=logOutputMode, outputMessage="Done", logName="main")
 
 functions.verbose(outputMode=logOutputMode, outputMessage="Checking if any spider's cookies can be auto-generated...", logName="main")
 queryArgs = {}
-query = "SELECT domains.domain FROM domains INNER JOIN scrapy_spiders ON domains.id = scrapy_spiders.domain_id WHERE active IS FALSE AND spider_status LIKE '%cookies have expired%'"
-queryData = db_connection.dbConnectionExecuteQuery(connectionObject=db_connection_eppostgres, query=query, queryArgs=queryArgs, queryReference="main_01", errorOutputMode=logOutputMode)
+query = "SELECT almacen.nombre_almacen FROM almacen INNER JOIN scrapy_spiders ON almacen.id = scrapy_spiders.domain_id WHERE active IS FALSE AND spider_status LIKE '%cookies have expired%'"
+queryData = db_connection.dbConnectionExecuteQuery(connectionObject=db_connection_mysql, query=query, queryArgs=queryArgs, queryReference="main_01", errorOutputMode=logOutputMode)
 
 if len(queryData[0]) > 0:
     functions.verbose(outputMode=logOutputMode, outputMessage="Done, found " + str(len(queryData[0])) + " spiders to auto-generate its cookies",logName="main")
@@ -58,7 +58,7 @@ if len(queryData[0]) > 0:
 
         if os.path.isfile(script_compelte_path_txt):
             functions.verbose(outputMode=logOutputMode, outputMessage="Executing the auto-cookie generator script...",logName="main")
-            shell_command = "python3.6 " + script_compelte_path_txt
+            shell_command = "python3 " + script_compelte_path_txt
             functions.verbose(outputMode=logOutputMode, outputMessage="Command to use: '" + shell_command + "'",logName="main")
             commandResponse = subprocess.check_output(shell_command, shell=True)
             functions.verbose(outputMode=logOutputMode, outputMessage="Done, cmd's response:" + str(commandResponse),logName="main")
@@ -76,8 +76,8 @@ functions.verbose(outputMode=logOutputMode, outputMessage="Done, cmd's response:
 #Get the spiders to execute
 queryArgs = {}
 functions.verbose(outputMode=logOutputMode, outputMessage="Getting the spiders to launch", logName="main")
-query = "SELECT domains.domain FROM domains INNER JOIN scrapy_spiders ON domains.id = scrapy_spiders.domain_id WHERE active IS TRUE"
-queryData = db_connection.dbConnectionExecuteQuery(connectionObject=db_connection_eppostgres, query=query, queryArgs=queryArgs, queryReference="main_01", errorOutputMode=logOutputMode)
+query = "SELECT almacen.nombre_almacen FROM almacen INNER JOIN scrapy_spiders ON almacenes.id = scrapy_spiders.domain_id WHERE active IS TRUE"
+queryData = db_connection.dbConnectionExecuteQuery(connectionObject=db_connection_mysql, query=query, queryArgs=queryArgs, queryReference="main_01", errorOutputMode=logOutputMode)
 
 if len(queryData[0]) > 0:
     functions.verbose(outputMode=logOutputMode, outputMessage="Done, spiders found " + str(len(queryData[0])) + ", query used '" + queryData[2] + "'", logName="main")
