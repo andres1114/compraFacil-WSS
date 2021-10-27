@@ -661,7 +661,7 @@ class ?spider_name_1(CrawlSpider):
                     date_str = body_text_ascii.strip()[start:end]
 
                     for temp_date_format in self.date_format.split("|"):
-                        if temp_date_format in date_str.lower():
+                        if temp_date_format.lower() in date_str.lower():
                             to_use_date_format = temp_date_format
                             found_date_flag = True
                             break
@@ -685,7 +685,7 @@ class ?spider_name_1(CrawlSpider):
                 for y in range(len(self.timestamp_newyork_array)):
                     tempFormatedDate = to_use_date_format
                     verbose(outputMode=logOutputMode, outputMessage="To match text: " + tempFormatedDate, logName="spider")
-                    if tempFormatedDate in date_str.lower():
+                    if tempFormatedDate.lower() in date_str.lower():
                         found_date_flag = True
                         self.dateIndex = y
 
