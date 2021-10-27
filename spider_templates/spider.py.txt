@@ -284,12 +284,8 @@ class ?spider_name_1(CrawlSpider):
         # Close the email connection
         smtp_email_object.quit()
 
-    def create_epfile(self, num, url, html, domain_name, now_madrid, now_newyork, payprotected, codec):
-        hhmm = datetime.utcfromtimestamp(now_newyork).strftime('%H%M')
-        eurodate = datetime.utcfromtimestamp(now_madrid).strftime('%Y%m%d')
-        date = datetime.utcfromtimestamp(now_newyork).strftime('%m/%d/%Y')
-
-        filename = domain_name + '__noticias_scrapy' + hhmm + '_' + (('000' + str(num))[-3:])
+    def create_epfile(self, num, url, html, domain_name, payprotected, codec):
+        filename = domain_name + '__productos_scrapy' + '_' + (('000' + str(num))[-3:ss])
 
         if codec == "utf8":
             f = open(current_script_dir + '/' + epfile_foldername + '/' + filename, "w+", encoding="utf-8")
@@ -301,13 +297,9 @@ class ?spider_name_1(CrawlSpider):
         ep_file_content = ep_file_content + "\n"
         ep_file_content = ep_file_content + "URL:" + url + ":URL"
         ep_file_content = ep_file_content + "\n"
-        ep_file_content = ep_file_content + "Eurodate:" + eurodate + ":Eurodate"
-        ep_file_content = ep_file_content + "\n"
         ep_file_content = ep_file_content + "Description::Description"
         ep_file_content = ep_file_content + "\n"
         ep_file_content = ep_file_content + "Payprotected:" + payprotected + ":Payprotected"
-        ep_file_content = ep_file_content + "\n"
-        ep_file_content = ep_file_content + "Date:" + date + ":Date"
         ep_file_content = ep_file_content + "\n"
         ep_file_content = ep_file_content + "\n"
         ep_file_content = ep_file_content + "\n"
@@ -316,21 +308,11 @@ class ?spider_name_1(CrawlSpider):
         f.write(ep_file_content)
         f.close()
 
-        cmd = "date +%Y-%m-%d%"
-        _date = re.sub("b'", "", str(subprocess.check_output(cmd, shell=True)))
-        _date = re.sub("%\\n'", "", _date)
-        _date = re.sub("\\n'", "", _date)
-        cmd = "date +%H:%M:%S"
-        _time = re.sub("b'", "", str(subprocess.check_output(cmd, shell=True)))
-        _time = re.sub("%\\n'", "", _time)
-        _time = re.sub("\\n'", "", _time)
-
-        date_folder = datetime.utcfromtimestamp(now_newyork).strftime('%Y%m%d')
-        rsync_cmd = "rsync -ravc " + current_script_dir + '/' + epfile_foldername + '/' + filename + " storage2:/mnt/nfs/digital_news/" + str(date_folder) + "/ 2>&1"
+        rsync_cmd = "rsync -ravc " + current_script_dir + '/' + epfile_foldername + '/' + filename + " storage2:/mnt/nfs/digital_news/ 2>&1"
 
         verbose(outputMode=logOutputMode,outputMessage="Inserting the epfile values into the epfile_log database...", logName="spider")
         queryArgs = (ep_file_content,)
-        query = 'INSERT INTO epfile_log (domain, filename, path, server_date, python_date_ny, python_date_mdr, page_grab_cmd, epfile_content) VALUES ("' + domain_name + '", "' + filename + '", "storage2:/mnt/nfs/digital_news/' + str(date_folder) + '/", "' + _date + ' ' + _time + '", "' + datetime.utcfromtimestamp(now_newyork).strftime('%Y-%m-%d %H:%M:%S') + '", "' + datetime.utcfromtimestamp(now_madrid).strftime('%Y-%m-%d %H:%M:%S') + '", "' + rsync_cmd + '", ?)'
+        query = 'INSERT INTO epfile_log (domain, filename, path, server_date, python_date_ny, python_date_mdr, page_grab_cmd, epfile_content) VALUES ("' + domain_name + '", "' + filename + '", "storage2:/mnt/nfs/digital_news/", CURRENT_DATE, CURRENT_DATE, CURRENT_DATE, "' + rsync_cmd + '", ?)'
         verbose(outputMode=logOutputMode, outputMessage="Used query: " + query, logName="spider")
 
         queryData = dbConnectionExecuteQuery(connectionObject=db_connection_epfilelog, query=query, queryArgs=queryArgs,queryReference="spider_query_15",errorOutputMode=logOutputMode)
@@ -723,12 +705,12 @@ class ?spider_name_1(CrawlSpider):
                                     if ep_file_failed_flag == False:
                                         verbose(outputMode=logOutputMode,outputMessage="Creating the ep_file...",logName="spider")
                                         verbose(outputMode=logOutputMode, outputMessage="Using UTF-8 codec", logName="spider")
-                                        ep_file = self.create_epfile(self.generated_epfiles, newUrl, body_text_utf8, self.cf_domain_name, self.timestamp_madrid_array[self.dateIndex], self.timestamp_newyork_array[self.dateIndex], "false", "utf8")
+                                        ep_file = self.create_epfile(self.generated_epfiles, newUrl, body_text_utf8, self.cf_domain_name, "false", "utf8")
                                         ep_file_flag = True
                                     else:
                                         verbose(outputMode=logOutputMode,outputMessage="Creating the ep_file...",logName="spider")
                                         verbose(outputMode=logOutputMode, outputMessage="Using ASCII codec",logName="spider")
-                                        ep_file = self.create_epfile(self.generated_epfiles, newUrl, body_text_ascii, self.cf_domain_name, self.timestamp_madrid_array[self.dateIndex], self.timestamp_newyork_array[self.dateIndex], "false", "ascii")
+                                        ep_file = self.create_epfile(self.generated_epfiles, newUrl, body_text_ascii, self.cf_domain_name, "false", "ascii")
                                         ep_file_flag = True
 
                                 except Exception as e:
