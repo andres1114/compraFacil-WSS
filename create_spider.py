@@ -97,7 +97,7 @@ query += ",scrapy_spiders.cookie_detection_node "   #pos 12
 query += ",scrapy_spiders.is_login_protected "      #pos 13
 query += "FROM scrapy_spiders "
 query += "INNER JOIN almacen "
-query += "ON scrapy_spiders.domain_id = domains.id "
+query += "ON scrapy_spiders.domain_id = almacen.id "
 query += "WHERE scrapy_spiders.created_at IS NULL"
 queryData = db_connection.dbConnectionExecuteQuery(connectionObject=db_connection_mysql, query=query, queryArgs=queryArgs, queryReference="create_spider_01", errorOutputMode=logOutputMode)
 
