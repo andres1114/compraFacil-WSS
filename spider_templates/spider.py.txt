@@ -13,6 +13,7 @@ from w3lib.http import basic_auth_header
 import json
 import os
 import time
+import calendar
 import locale
 import sys
 import random
@@ -285,7 +286,8 @@ class ?spider_name_1(CrawlSpider):
         smtp_email_object.quit()
 
     def create_epfile(self, num, url, html, domain_name, payprotected, codec):
-        filename = domain_name + '__productos_scrapy' + '_' + (('000' + str(num))[-3:])
+        gmt = time.gmtime()
+        filename = domain_name + '__productos_scrapy' + '_' + (('000' + str(num))[-3:]) + "_" + str(calendar.timegm(gmt))
 
         if codec == "utf8":
             f = open(current_script_dir + '/' + epfile_foldername + '/' + filename, "w+", encoding="utf-8")
@@ -321,7 +323,7 @@ class ?spider_name_1(CrawlSpider):
         return filename
 
     def execute_repair_script(self):
-        verbose(outputMode=logOutputMode, outputMessage="Executing epfile tester for paid articles", logName="spider")
+        verbose(outputMode=logOutputMode, outputMessage="Executing epfile tester for paid products", logName="spider")
 
         shell_command = "python3 " + current_script_dir + "/" + epfile_foldername + "/" + epfile_paywall_tester_filename + " " + str(self.domainId) + " " + str(logOutputMode) + " &> /dev/null &"
         verbose(outputMode=logOutputMode, outputMessage="Command to use: '" + shell_command + "'",logName="spider")
@@ -505,7 +507,7 @@ class ?spider_name_1(CrawlSpider):
     def spider_closed(self, spider):
         verbose(outputMode=logOutputMode, outputMessage="The spider has finished scraping", logName="spider")
         verbose(outputMode=logOutputMode, outputMessage="Total urls scraped: " + str(self.scrapedPages), logName="spider")
-        verbose(outputMode=logOutputMode, outputMessage="Total articles converted as epfiles: " + str(self.generated_epfiles), logName="spider")
+        verbose(outputMode=logOutputMode, outputMessage="Total products converted as epfiles: " + str(self.generated_epfiles), logName="spider")
         verbose(outputMode=logOutputMode, outputMessage="Total valid urls: " + str(self.validUrls), logName="spider")
         verbose(outputMode=logOutputMode, outputMessage="Total dated urls found: " + str(self.datedUrls), logName="spider")
         verbose(outputMode=logOutputMode, outputMessage="Total dateless urls found: " + str(self.datelessUrls), logName="spider")
