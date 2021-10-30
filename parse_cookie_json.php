@@ -12,7 +12,7 @@
 
     verbose(array("outputMode" => 0, "outputMessage" => "Connecting to the eprensa database...", "logName" => "parse_cookie_json"));
     //Create the PDO connection objects
-    $pdo_mysql = pdoCreateConnection(array('db_type' => "mysql", 'db_host' => "192.168.10.13", 'db_user' => "root", 'db_pass' => "admin", 'db_name' => "compraFacil"));
+    $pdo_mysql = pdoCreateConnection(array('db_type' => "mysql", 'db_host' => "192.168.10.16", 'db_user' => "root", 'db_pass' => "admin", 'db_name' => "compraFacil"));
     verbose(array("outputMode" => 0, "outputMessage" => "Done", "logName" => "parse_cookie_json"));
 
     //Define the constants
