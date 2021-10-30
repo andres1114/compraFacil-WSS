@@ -342,7 +342,7 @@ class ?spider_name_1(CrawlSpider):
             "url": url
         }
         query = "DELETE FROM dontgrablog WHERE url = %(url)s"
-        dbConnectionExecuteQuery(connectionObject=db_connection_dontgrablog, query=query,queryArgs=queryArgs, queryReference="spider_query_17",errorOutputMode=logOutputMode)
+        #dbConnectionExecuteQuery(connectionObject=db_connection_dontgrablog, query=query,queryArgs=queryArgs, queryReference="spider_query_17",errorOutputMode=logOutputMode)
 
 
     def diasble_spider_due_cookies(self, url):
