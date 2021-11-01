@@ -299,9 +299,9 @@ class ?spider_name_1(CrawlSpider):
         ep_file_content = ep_file_content + "\n"
         ep_file_content = ep_file_content + "URL:" + url + ":URL"
         ep_file_content = ep_file_content + "\n"
-        ep_file_content = ep_file_content + "Description::Description"
-        ep_file_content = ep_file_content + "\n"
         ep_file_content = ep_file_content + "Payprotected:" + payprotected + ":Payprotected"
+        ep_file_content = ep_file_content + "\n"
+        ep_file_content = ep_file_content + "DomainId:" + self.domainId + ":DomainId"
         ep_file_content = ep_file_content + "\n"
         ep_file_content = ep_file_content + "\n"
         ep_file_content = ep_file_content + "\n"
@@ -310,11 +310,11 @@ class ?spider_name_1(CrawlSpider):
         f.write(ep_file_content)
         f.close()
 
-        rsync_cmd = "rsync -ravc " + current_script_dir + '/' + epfile_foldername + '/' + filename + " storage2:/mnt/nfs/digital_news/ 2>&1"
+        rsync_cmd = "rsync -ravc " + current_script_dir + '/' + epfile_foldername + '/' + filename + " /mnt/nfs/ep_files/ 2>&1"
 
         verbose(outputMode=logOutputMode,outputMessage="Inserting the epfile values into the epfile_log database...", logName="spider")
         queryArgs = (ep_file_content,)
-        query = 'INSERT INTO epfile_log (domain, filename, path, server_date, python_date_ny, python_date_mdr, page_grab_cmd, epfile_content) VALUES ("' + domain_name + '", "' + filename + '","storage2:/mnt/nfs/digital_news/", CURRENT_DATE, CURRENT_DATE, CURRENT_DATE, "' + rsync_cmd + '", ?)'
+        query = 'INSERT INTO epfile_log (domain, filename, path, server_date, python_date_ny, python_date_mdr, page_grab_cmd, epfile_content) VALUES ("' + domain_name + '", "' + filename + '","/mnt/nfs/ep_files/", CURRENT_DATE, CURRENT_DATE, CURRENT_DATE, "' + rsync_cmd + '", ?)'
         verbose(outputMode=logOutputMode, outputMessage="Used query: " + query, logName="spider")
 
         queryData = dbConnectionExecuteQuery(connectionObject=db_connection_epfilelog, query=query, queryArgs=queryArgs,queryReference="spider_query_15",errorOutputMode=logOutputMode)
@@ -528,7 +528,7 @@ class ?spider_name_1(CrawlSpider):
         dbConnectionExecuteQuery(connectionObject=db_connection_epfilelog, query=query, queryArgs={}, queryReference="spider_query_22",  errorOutputMode=logOutputMode)
         verbose(outputMode=logOutputMode, outputMessage="Done", logName="spider")
 
-        #self.execute_repair_script()
+        self.execute_repair_script()
         update_spider_mode()
         update_site_map()
 
@@ -607,14 +607,14 @@ class ?spider_name_1(CrawlSpider):
             self.limitToSendArticlesToESCounterInSeconds = time.time()
 
         if (time.time() - self.limitToSendArticlesToESCounterInSeconds) > self.limitToSendArticlesToESInSeconds and self.limitToSendArticlesToESCounter > 0:
-            #self.execute_repair_script()
+            self.execute_repair_script()
             self.limitToSendArticlesToESCounter = 0
             self.limitToSendArticlesToESCounterInSeconds = time.time()
 
         if tagged is None:
             if (time.time() - self.limitToCloseSpiderInSeconds) > self.maxAmountOfSecondsPassed:
-                #if self.limitToSendArticlesToESCounter > 0:
-                    #self.execute_repair_script()
+                if self.limitToSendArticlesToESCounter > 0:
+                    self.execute_repair_script()
 
                 raise CloseSpider('SPIDER_TIMEOUT_REACHED')
 
@@ -733,7 +733,7 @@ class ?spider_name_1(CrawlSpider):
                                 self.limitToSendArticlesToESCounterInSeconds = time.time()
 
                             if self.limitToSendArticlesToESCounter >= self.limitToSendArticlesToES or (time.time() - self.limitToSendArticlesToESCounterInSeconds) > self.limitToSendArticlesToESInSeconds:
-                                #self.execute_repair_script()
+                                self.execute_repair_script()
                                 self.limitToSendArticlesToESCounter = 0
                                 self.limitToSendArticlesToESCounterInSeconds = time.time()
                             else:
@@ -789,7 +789,7 @@ class ?spider_name_1(CrawlSpider):
         verbose(outputMode=logOutputMode, outputMessage="Scraped pages counter: " + str(self.scrapedPages), logName="spider")
 
         if (time.time() - self.limitToCloseSpiderInSeconds) > self.maxAmountOfSecondsPassed:
-            #if self.limitToSendArticlesToESCounter > 0:
-                #self.execute_repair_script()
+            if self.limitToSendArticlesToESCounter > 0:
+                self.execute_repair_script()
 
             raise CloseSpider('SPIDER_TIMEOUT_REACHED')
