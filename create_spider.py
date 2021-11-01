@@ -59,7 +59,7 @@ def updateSpiderStatus(**kwargs):
 
 functions.verbose(outputMode=logOutputMode, outputMessage="Creating the DB connection objects...", logName="create_spider")
 #Create the databas connection objects
-db_connection_mysql = db_connection.createDbConnection(db_type='mysql', db_host='192.168.10.16', db_user='root', db_pass='admin', db_name='compraFacil')
+db_connection_mysql = db_connection.createDbConnection(db_type='mysql', db_host='192.168.10.19', db_user='root', db_pass='admin', db_name='compraFacil')
 
 functions.verbose(outputMode=logOutputMode, outputMessage="Done", logName="create_spider")
 
