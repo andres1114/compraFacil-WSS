@@ -76,7 +76,7 @@ functions.verbose(outputMode=logOutputMode, outputMessage="Done, cmd's response:
 #Get the spiders to execute
 queryArgs = {}
 functions.verbose(outputMode=logOutputMode, outputMessage="Getting the spiders to launch", logName="main")
-query = "SELECT almacen.nombre_almacen FROM almacen INNER JOIN scrapy_spiders ON almacen.id = scrapy_spiders.domain_id WHERE active IS TRUE"
+query = "SELECT almacen.nombre_almacen FROM almacen INNER JOIN scrapy_spiders ON almacen.id = scrapy_spiders.domain_id WHERE scrapy_spiders.active IS TRUE"
 queryData = db_connection.dbConnectionExecuteQuery(connectionObject=db_connection_mysql, query=query, queryArgs=queryArgs, queryReference="main_01", errorOutputMode=logOutputMode)
 
 if len(queryData[0]) > 0:
