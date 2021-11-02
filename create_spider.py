@@ -55,11 +55,11 @@ def updateSpiderStatus(**kwargs):
         "spider_id": spider_id
         , "status": spiderToupdateText
     }
-    queryData = db_connection.dbConnectionExecuteQuery(connectionObject=db_connection_eppostgres, query=query, queryArgs=queryArgs, queryReference="create_spider_02", errorOutputMode=logOutputMode)
+    queryData = db_connection.dbConnectionExecuteQuery(connectionObject=db_connection_mysql, query=query, queryArgs=queryArgs, queryReference="create_spider_02", errorOutputMode=logOutputMode)
 
 functions.verbose(outputMode=logOutputMode, outputMessage="Creating the DB connection objects...", logName="create_spider")
 #Create the databas connection objects
-db_connection_eppostgres = db_connection.createDbConnection(db_type='postgres', db_host='rwpgsql', db_user='tsg', db_pass='newPOST53', db_name='eprensa')
+db_connection_mysql = db_connection.createDbConnection(db_type='mysql', db_host='192.168.10.19', db_user='root', db_pass='admin', db_name='compraFacil')
 
 functions.verbose(outputMode=logOutputMode, outputMessage="Done", logName="create_spider")
 
@@ -87,8 +87,8 @@ query += ",scrapy_spiders.date_format"              #pos 2
 query += ",scrapy_spiders.date_start_string"        #pos 3
 query += ",scrapy_spiders.date_end_string"          #pos 4
 query += ",scrapy_spiders.requires_cookie"          #pos 5
-query += ",domains.domain"                          #pos 6
-query += ",domains.src_url"                         #pos 7
+query += ",almacen.nombre_almacen"                  #pos 6
+query += ",almacen.pagina_web_almacen"              #pos 7
 query += ",scrapy_spiders.id "                      #pos 8
 query += ",scrapy_spiders.date_locale "             #pos 9
 query += ",scrapy_spiders.requieres_proxy "         #pos 10
@@ -96,10 +96,10 @@ query += ",scrapy_spiders.is_pay_protected "        #pos 11
 query += ",scrapy_spiders.cookie_detection_node "   #pos 12
 query += ",scrapy_spiders.is_login_protected "      #pos 13
 query += "FROM scrapy_spiders "
-query += "INNER JOIN domains "
-query += "ON scrapy_spiders.domain_id = domains.id "
+query += "INNER JOIN almacen "
+query += "ON scrapy_spiders.domain_id = almacen.id "
 query += "WHERE scrapy_spiders.created_at IS NULL"
-queryData = db_connection.dbConnectionExecuteQuery(connectionObject=db_connection_eppostgres, query=query, queryArgs=queryArgs, queryReference="create_spider_01", errorOutputMode=logOutputMode)
+queryData = db_connection.dbConnectionExecuteQuery(connectionObject=db_connection_mysql, query=query, queryArgs=queryArgs, queryReference="create_spider_01", errorOutputMode=logOutputMode)
 
 #Check whether there is any domain to create a spider from
 if len(queryData[0]) > 0:
@@ -110,7 +110,7 @@ if len(queryData[0]) > 0:
         functions.verbose(outputMode=logOutputMode, outputMessage="Processing domains " + str(x + 1) + " of " + str(len(queryData[0])), logName="create_spider")
 
         #Completing the cokie checker cmd
-        cookie_checker_cmd = "python3.6 " + current_script_dir + "/" + cookie_checker_filename
+        cookie_checker_cmd = "python3 " + current_script_dir + "/" + cookie_checker_filename
 
         #Create the spider's name
         spider_name_1 = re.sub("[.]", "_", queryData[0][x][6])
@@ -131,12 +131,12 @@ if len(queryData[0]) > 0:
         else:
             cookie_detection_node = queryData[0][x][12]
 
-        spider_email_recipants = '["apzapata@eprensa.com", "vduran@eprensa.com", "tclavell@eprensa.com"]'
+        spider_email_recipants = '["polako_1114@hotmail.es"]'
 
         functions.verbose(outputMode=logOutputMode, outputMessage="Checking if the domains has the full URL already set...", logName="create_spider")
 
         if domain_full_url is None:
-            errorMessage = "ERR_CANT_CREATE_SPIDER Can not create spider '" + spider_name_1 + "' as the domain '" + spider_name_2 + "' (" + str(queryData[0][x][0]) + ") does not have the full URL set in the field 'domains.src_url'"
+            errorMessage = "ERR_CANT_CREATE_SPIDER Can not create spider '" + spider_name_1 + "' as the domain '" + spider_name_2 + "' (" + str(queryData[0][x][0]) + ") does not have the full URL set in the field 'almacen.pagina_web_almacens'"
             functions.verbose(outputMode=logOutputMode, outputMessage=errorMessage, logName="create_spider")
             updateSpiderStatus(spider_id=queryData[0][x][8], status=0, statusText=errorMessage)
             continue

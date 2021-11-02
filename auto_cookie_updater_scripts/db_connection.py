@@ -19,8 +19,7 @@ def createDbConnection(**kwargs):
     if db_type == 'mysql':
         try:
             import MySQLdb
-            db_connection = MySQLdb.connect(host=db_host, user=db_user, password=db_pass, dbname=db_name)
-            db_connection.set_client_encoding("utf8")
+            db_connection = MySQLdb.connect(host=db_host, user=db_user, password=db_pass, database=db_name, charset="utf8", use_unicode=True)
         except Exception as e:
 
             errorMessage = "ERR_CANT_CREATE_DB_CONNECTION "+str(e)
