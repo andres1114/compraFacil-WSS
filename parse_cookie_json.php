@@ -12,7 +12,7 @@
 
     verbose(array("outputMode" => 0, "outputMessage" => "Connecting to the eprensa database...", "logName" => "parse_cookie_json"));
     //Create the PDO connection objects
-    $pdo_eppostgres = pdoCreateConnection(array('db_type' => "postgres", 'db_host' => "rwpgsql", 'db_user' => "tsg", 'db_pass' => "newPOST53", 'db_name' => "eprensa"));
+    $pdo_mysql = pdoCreateConnection(array('db_type' => "mysql", 'db_host' => "192.168.10.19", 'db_user' => "root", 'db_pass' => "admin", 'db_name' => "compraFacil"));
     verbose(array("outputMode" => 0, "outputMessage" => "Done", "logName" => "parse_cookie_json"));
 
     //Define the constants
@@ -44,8 +44,8 @@
 				$query_args = array(
 					"domain" => $domain
 				);
-				$query = "SELECT id FROM domains WHERE domain = :domain AND p_or_d = 'd'";
-				$query_data = pdoExecuteQuery($pdo_eppostgres,$query,$query_args,"query_01");
+				$query = "SELECT id FROM almacen WHERE nombre_almacen = :domain";
+				$query_data = pdoExecuteQuery($pdo_mysql,$query,$query_args,"query_01");
 	
 				if ($query_data[1] == 0) {
 					verbose(array("outputMode" => 0, "outputMessage" => "The value '".$domain."' did not return any domain_id, skipping", "logName" => "parse_cookie_json"));
@@ -69,7 +69,7 @@
                     "name" => $cookie_name
                 );
                 $query = "SELECT id, header_name, header_value FROM scrapy_headers WHERE header_name = :name";
-                $query_data = pdoExecuteQuery($pdo_eppostgres,$query,$query_args,"query_02");
+                $query_data = pdoExecuteQuery($pdo_mysql,$query,$query_args,"query_02");
 
                 if ($query_data[1] > 0) {
                     verbose(array("outputMode" => 0, "outputMessage" => "The cookie existes, checking whether it needs an update", "logName" => "parse_cookie_json"));
@@ -84,7 +84,7 @@
                             ,"status" => 'Active'
                         );
                         $query = "UPDATE scrapy_headers SET header_value = :value, header_status = :status, active = TRUE WHERE id = :cookieid";
-                        pdoExecuteQuery($pdo_eppostgres,$query,$query_args,"query_03");
+                        pdoExecuteQuery($pdo_mysql,$query,$query_args,"query_03");
                         verbose(array("outputMode" => 0, "outputMessage" => "Done", "logName" => "parse_cookie_json"));
 
                     } else {
@@ -95,7 +95,7 @@
                             ,"status" => 'Active'
                         );
                         $query = "UPDATE scrapy_headers SET header_status = :status, active = TRUE WHERE id = :cookieid";
-                        pdoExecuteQuery($pdo_eppostgres,$query,$query_args,"query_04");
+                        pdoExecuteQuery($pdo_mysql,$query,$query_args,"query_04");
                         verbose(array("outputMode" => 0, "outputMessage" => "Done", "logName" => "parse_cookie_json"));
                     }
                 } else {
@@ -109,7 +109,7 @@
                         ,"status" => 'Active'
                     );
                     $query = "INSERT INTO scrapy_headers (domain_id, header_type, header_name, header_value, header_status, days_until_expiration, active) VALUES (:domainid, :type, :name, :value, :status, NULL, TRUE)";
-                    pdoExecuteQuery($pdo_eppostgres,$query,$query_args,"query_05");
+                    pdoExecuteQuery($pdo_mysql,$query,$query_args,"query_05");
                     verbose(array("outputMode" => 0, "outputMessage" => "Done", "logName" => "parse_cookie_json"));
                 }
             }
@@ -121,7 +121,7 @@
                 ,"status" => 'ERROR: cookies have expired'
             );
             $query = "DELETE FROM scrapy_headers WHERE domain_id = :domainid AND header_type = :type AND header_status = :status";
-            pdoExecuteQuery($pdo_eppostgres,$query,$query_args,"query_06");
+            pdoExecuteQuery($pdo_mysql,$query,$query_args,"query_06");
             verbose(array("outputMode" => 0, "outputMessage" => "Done", "logName" => "parse_cookie_json"));
 
             verbose(array("outputMode" => 0, "outputMessage" => "Deleting the file '$json_file_name' in path '".$current_script_path.$json_folder."'", "logName" => "parse_cookie_json"));
@@ -136,7 +136,7 @@
                 ,"status" => 'Active'
             );
             $query = "UPDATE scrapy_spiders SET spider_status = :status, active = TRUE WHERE domain_id = :domainid";
-            pdoExecuteQuery($pdo_eppostgres,$query,$query_args,"query_07");
+            pdoExecuteQuery($pdo_mysql,$query,$query_args,"query_07");
 
             verbose(array("outputMode" => 0, "outputMessage" => "Done", "logName" => "parse_cookie_json"));
         }

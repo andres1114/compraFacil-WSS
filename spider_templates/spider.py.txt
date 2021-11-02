@@ -13,6 +13,7 @@ from w3lib.http import basic_auth_header
 import json
 import os
 import time
+import calendar
 import locale
 import sys
 import random
@@ -54,8 +55,7 @@ def createDbConnection(**kwargs):
     if db_type == 'mysql':
         try:
             import MySQLdb
-            db_connection = MySQLdb.connect(host=db_host, user=db_user, password=db_pass, dbname=db_name)
-            db_connection.set_client_encoding("utf8")
+            db_connection = MySQLdb.connect(host=db_host, user=db_user, password=db_pass, database=db_name, charset="utf8", use_unicode=True)
         except Exception as e:
             errorMessage = "ERR_CANT_CREATE_DB_CONNECTION " + str(e)
             verbose(outputMode=kwargs.get('errorOutputMode'), outputMessage=errorMessage,logName="spider_db_connection")
@@ -118,8 +118,7 @@ log_database_filename = "epfile_log.sqlite3"
 epfile_paywall_tester_filename = "ep_file_paywall_tester.py"
 epfile_foldername = "temp_ep_files"
 
-db_connection_eprensa = createDbConnection(db_type='postgres', db_host='rwpgsql', db_user='tsg',db_pass='newPOST53', db_name='eprensa')
-db_connection_dontgrablog = createDbConnection(db_type='postgres', db_host='epdontgrablog', db_user='tsg', db_pass='newPOST53', db_name='paperdata')
+db_connection_mysql = createDbConnection(db_type='mysql', db_host='192.168.10.19', db_user='root',db_pass='admin', db_name='compraFacil')
 db_connection_epfilelog = createDbConnection(db_type='sqlite',db_host=current_script_dir + "/" + log_database_filename, db_user='',db_pass='', db_name='')
 db_connection_miscdb = createDbConnection(db_type='sqlite',db_host=current_script_dir + "/" + misc_database_filename, db_user='',db_pass='', db_name='')
 
@@ -204,7 +203,7 @@ def get_site_map():
     return sitemap
 
 
-class ?spider_name_1Spider(CrawlSpider):
+class ?spider_name_1(CrawlSpider):
 
     #Set the domain id
     domainId = ?domainId
@@ -286,12 +285,9 @@ class ?spider_name_1Spider(CrawlSpider):
         # Close the email connection
         smtp_email_object.quit()
 
-    def create_epfile(self, num, url, html, domain_name, now_madrid, now_newyork, payprotected, codec):
-        hhmm = datetime.utcfromtimestamp(now_newyork).strftime('%H%M')
-        eurodate = datetime.utcfromtimestamp(now_madrid).strftime('%Y%m%d')
-        date = datetime.utcfromtimestamp(now_newyork).strftime('%m/%d/%Y')
-
-        filename = domain_name + '__noticias_scrapy' + hhmm + '_' + (('000' + str(num))[-3:])
+    def create_epfile(self, num, url, html, domain_name, payprotected, codec):
+        gmt = time.gmtime()
+        filename = domain_name + '__productos_scrapy' + '_' + (('000' + str(num))[-3:]) + "_" + str(calendar.timegm(gmt))
 
         if codec == "utf8":
             f = open(current_script_dir + '/' + epfile_foldername + '/' + filename, "w+", encoding="utf-8")
@@ -303,13 +299,9 @@ class ?spider_name_1Spider(CrawlSpider):
         ep_file_content = ep_file_content + "\n"
         ep_file_content = ep_file_content + "URL:" + url + ":URL"
         ep_file_content = ep_file_content + "\n"
-        ep_file_content = ep_file_content + "Eurodate:" + eurodate + ":Eurodate"
-        ep_file_content = ep_file_content + "\n"
-        ep_file_content = ep_file_content + "Description::Description"
-        ep_file_content = ep_file_content + "\n"
         ep_file_content = ep_file_content + "Payprotected:" + payprotected + ":Payprotected"
         ep_file_content = ep_file_content + "\n"
-        ep_file_content = ep_file_content + "Date:" + date + ":Date"
+        ep_file_content = ep_file_content + "DomainId:" + str(self.domainId) + ":DomainId"
         ep_file_content = ep_file_content + "\n"
         ep_file_content = ep_file_content + "\n"
         ep_file_content = ep_file_content + "\n"
@@ -318,21 +310,11 @@ class ?spider_name_1Spider(CrawlSpider):
         f.write(ep_file_content)
         f.close()
 
-        cmd = "date +%Y-%m-%d%"
-        _date = re.sub("b'", "", str(subprocess.check_output(cmd, shell=True)))
-        _date = re.sub("%\\n'", "", _date)
-        _date = re.sub("\\n'", "", _date)
-        cmd = "date +%H:%M:%S"
-        _time = re.sub("b'", "", str(subprocess.check_output(cmd, shell=True)))
-        _time = re.sub("%\\n'", "", _time)
-        _time = re.sub("\\n'", "", _time)
-
-        date_folder = datetime.utcfromtimestamp(now_newyork).strftime('%Y%m%d')
-        rsync_cmd = "rsync -ravc " + current_script_dir + '/' + epfile_foldername + '/' + filename + " storage2:/mnt/nfs/digital_news/" + str(date_folder) + "/ 2>&1"
+        rsync_cmd = "rsync -ravc " + current_script_dir + '/' + epfile_foldername + '/' + filename + " /mnt/nfs/ep_files/ 2>&1"
 
         verbose(outputMode=logOutputMode,outputMessage="Inserting the epfile values into the epfile_log database...", logName="spider")
         queryArgs = (ep_file_content,)
-        query = 'INSERT INTO epfile_log (domain, filename, path, server_date, python_date_ny, python_date_mdr, page_grab_cmd, epfile_content) VALUES ("' + domain_name + '", "' + filename + '", "storage2:/mnt/nfs/digital_news/' + str(date_folder) + '/", "' + _date + ' ' + _time + '", "' + datetime.utcfromtimestamp(now_newyork).strftime('%Y-%m-%d %H:%M:%S') + '", "' + datetime.utcfromtimestamp(now_madrid).strftime('%Y-%m-%d %H:%M:%S') + '", "' + rsync_cmd + '", ?)'
+        query = 'INSERT INTO epfile_log (domain, filename, path, server_date, python_date_ny, python_date_mdr, page_grab_cmd, epfile_content) VALUES ("' + domain_name + '", "' + filename + '","/mnt/nfs/ep_files/", CURRENT_DATE, CURRENT_DATE, CURRENT_DATE, "' + rsync_cmd + '", ?)'
         verbose(outputMode=logOutputMode, outputMessage="Used query: " + query, logName="spider")
 
         queryData = dbConnectionExecuteQuery(connectionObject=db_connection_epfilelog, query=query, queryArgs=queryArgs,queryReference="spider_query_15",errorOutputMode=logOutputMode)
@@ -341,9 +323,9 @@ class ?spider_name_1Spider(CrawlSpider):
         return filename
 
     def execute_repair_script(self):
-        verbose(outputMode=logOutputMode, outputMessage="Executing epfile tester for paid articles", logName="spider")
+        verbose(outputMode=logOutputMode, outputMessage="Executing epfile tester for paid products", logName="spider")
 
-        shell_command = "python3.6 " + current_script_dir + "/" + epfile_foldername + "/" + epfile_paywall_tester_filename + " " + str(self.domainId) + " " + str(logOutputMode) + " &> /dev/null &"
+        shell_command = "python3 " + current_script_dir + "/" + epfile_foldername + "/" + epfile_paywall_tester_filename + " " + str(self.domainId) + " " + str(logOutputMode) + " &> /dev/null &"
         verbose(outputMode=logOutputMode, outputMessage="Command to use: '" + shell_command + "'",logName="spider")
         commandResponse = subprocess.check_output(shell_command, shell=True)
         verbose(outputMode=logOutputMode, outputMessage="Done", logName="spider")
@@ -360,7 +342,7 @@ class ?spider_name_1Spider(CrawlSpider):
             "url": url
         }
         query = "DELETE FROM dontgrablog WHERE url = %(url)s"
-        dbConnectionExecuteQuery(connectionObject=db_connection_dontgrablog, query=query,queryArgs=queryArgs, queryReference="spider_query_17",errorOutputMode=logOutputMode)
+        #dbConnectionExecuteQuery(connectionObject=db_connection_dontgrablog, query=query,queryArgs=queryArgs, queryReference="spider_query_17",errorOutputMode=logOutputMode)
 
 
     def diasble_spider_due_cookies(self, url):
@@ -380,32 +362,32 @@ class ?spider_name_1Spider(CrawlSpider):
         verbose(outputMode=logOutputMode, outputMessage="Updating the status of the spider in the database...",logName="spider")
         queryArgs = {"domain_id": self.domainId}
         query = "UPDATE scrapy_spiders SET spider_status = 'ERROR: cookies have expired', active = FALSE WHERE domain_id = %(domain_id)s"
-        dbConnectionExecuteQuery(connectionObject=db_connection_eprensa, query=query, queryArgs=queryArgs,queryReference="spider_query_18", errorOutputMode=logOutputMode)
+        dbConnectionExecuteQuery(connectionObject=db_connection_mysql, query=query, queryArgs=queryArgs,queryReference="spider_query_18", errorOutputMode=logOutputMode)
         verbose(outputMode=logOutputMode, outputMessage="Done", logName="spider")
         verbose(outputMode=logOutputMode, outputMessage="Updating the status of the cookies in the database...",logName="spider")
         queryArgs = {"domain_id": self.domainId}
         query = "UPDATE scrapy_headers SET header_status = 'ERROR: cookies have expired', active = FALSE WHERE domain_id = %(domain_id)s AND header_type = 1"
-        dbConnectionExecuteQuery(connectionObject=db_connection_eprensa, query=query, queryArgs=queryArgs,queryReference="spider_query_19", errorOutputMode=logOutputMode)
+        dbConnectionExecuteQuery(connectionObject=db_connection_mysql, query=query, queryArgs=queryArgs,queryReference="spider_query_19", errorOutputMode=logOutputMode)
         verbose(outputMode=logOutputMode, outputMessage="Done", logName="spider")
         verbose(outputMode=logOutputMode, outputMessage="Sending the email to alert the stauts of the coookies...",logName="spider")
 
         # <email block>
         # Create the email subject
-        email_subject = "Scrapy Cookie vencida | " + str(self.eprensa_domain_name) + " | " + str(self.domainId)
+        email_subject = "Scrapy Cookie vencida | " + str(self.cf_domain_name) + " | " + str(self.domainId)
 
         # Start the email body to be sent with the alert
         email_html_body = "<div style='font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,\"Helvetica Neue\",Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\",\"Segoe UI Symbol\",\"Noto Color Emoji\"'>";
 
         email_html_body += "<h2>Se ha vencido las cookies</h2>"
         email_html_body += "<hr/>"
-        email_html_body += "<p>Las cookies de la Scrapy spider " + str(self.eprensa_domain_name) + " (" + str(self.name) + ") han caducado</p>"
-        email_html_body += "<p><b>Dominio:</b> " + str(self.eprensa_domain_name) + "</p>"
+        email_html_body += "<p>Las cookies de la Scrapy spider " + str(self.cf_domain_name) + " (" + str(self.name) + ") han caducado</p>"
+        email_html_body += "<p><b>Dominio:</b> " + str(self.cf_domain_name) + "</p>"
         email_html_body += "<p><b>ID:</b> " + str(self.domainId) + "</p>"
         email_html_body += "<p><b>URL de deteccion:</b> " + url + "</p>"
         email_html_body += "<br/>"
         email_html_body += "<p>La spider ha sido desabilitada y no se ejcutara mas hasta que la(s) cookie(s) sea(n) actualizada(s)</p>"
 
-        self.send_email(email_subject=email_subject, email_from=self.email_sender, email_to=self.email_recipients,email_html_message=email_html_body)
+        #self.send_email(email_subject=email_subject, email_from=self.email_sender, email_to=self.email_recipients,email_html_message=email_html_body)
         # <email block>
         verbose(outputMode=logOutputMode, outputMessage="Done",logName="spider")
         verbose(outputMode=logOutputMode, outputMessage="closing the spider", logName="spider")
@@ -426,21 +408,12 @@ class ?spider_name_1Spider(CrawlSpider):
 
     timestamp_madrid_array = []
     timestamp_newyork_array = []
-    pastDaysToSearch = 1
-
-    timestamp_madrid_array.append(now_timestamp_madrid)
-    timestamp_newyork_array.append(now_timestamp_newyork)
-
-    if pastDaysToSearch > 0:
-        for x in range(pastDaysToSearch):
-            timestamp_madrid_array.append((now_timestamp_madrid - ((60 * 60) * (24 * (x + 1)))))
-            timestamp_newyork_array.append((now_timestamp_newyork - ((60 * 60) * (24 * (x + 1)))))
 
     dateIndex = 0
 
     date_format = '?date_format'
     generated_epfiles = 0
-    eprensa_domain_name = '?spider_name_2'
+    cf_domain_name = '?spider_name_2'
     name = '?spider_name_1'
     allowed_domains = ['?spider_name_2']
     domain_url = '?domain_full_url'
@@ -460,7 +433,7 @@ class ?spider_name_1Spider(CrawlSpider):
     spiderId = random.getrandbits(128)
     spiderExecutionMode = 0
 
-    email_sender = "info@eprensa.com"
+    email_sender = "polako_1114@hotmail.es"
     email_recipients = ?spider_email_recipants
 
     daysToDeletedVisitedUrlsLog = 7
@@ -477,7 +450,7 @@ class ?spider_name_1Spider(CrawlSpider):
 
     #Set the spider's settings
     custom_settings = {
-        'CONCURRENT_REQUESTS' : 1
+        'CONCURRENT_REQUESTS' : 16
 		,'CONCURRENT_ITEMS' : 100
     }
 
@@ -527,14 +500,14 @@ class ?spider_name_1Spider(CrawlSpider):
     @classmethod
 
     def from_crawler(cls, crawler, *args, **kwargs):
-        spider = super(?spider_name_1Spider, cls).from_crawler(crawler, *args, **kwargs)
+        spider = super(?spider_name_1, cls).from_crawler(crawler, *args, **kwargs)
         crawler.signals.connect(spider.spider_closed, signals.spider_closed)
         return spider
 
     def spider_closed(self, spider):
         verbose(outputMode=logOutputMode, outputMessage="The spider has finished scraping", logName="spider")
         verbose(outputMode=logOutputMode, outputMessage="Total urls scraped: " + str(self.scrapedPages), logName="spider")
-        verbose(outputMode=logOutputMode, outputMessage="Total articles converted as epfiles: " + str(self.generated_epfiles), logName="spider")
+        verbose(outputMode=logOutputMode, outputMessage="Total products converted as epfiles: " + str(self.generated_epfiles), logName="spider")
         verbose(outputMode=logOutputMode, outputMessage="Total valid urls: " + str(self.validUrls), logName="spider")
         verbose(outputMode=logOutputMode, outputMessage="Total dated urls found: " + str(self.datedUrls), logName="spider")
         verbose(outputMode=logOutputMode, outputMessage="Total dateless urls found: " + str(self.datelessUrls), logName="spider")
@@ -672,27 +645,21 @@ class ?spider_name_1Spider(CrawlSpider):
                     date_str = body_text_ascii.strip()[start:end]
 
                     for temp_date_format in self.date_format.split("|"):
-                        for y in range(len(self.timestamp_newyork_array)):
-                            tempFormatedDate = datetime.utcfromtimestamp(self.timestamp_newyork_array[y]).strftime(temp_date_format).lower()
-                            tempFormatedDate = re.sub(r"^0", "", tempFormatedDate)
-                            if tempFormatedDate in date_str.lower():
-                                to_use_date_format = temp_date_format
-                                tempDateIndex = y
-                                found_date_flag = True
-                                break
-
-                        if found_date_flag == True:
+                        verbose(outputMode=logOutputMode, outputMessage="Testing date_str against temp_date_format ("+date_str+", "+temp_date_format+")", logName="spider")
+                        if temp_date_format.lower() in date_str.lower():
+                            to_use_date_format = temp_date_format
+                            found_date_flag = True
                             break
 
                     if to_use_date_format is None:
-                        verbose(outputMode=logOutputMode,outputMessage="No suitable date format was found for " + tempFormatedDate + ", either the date is too old or the format is not configured, switching to default (" + self.date_format.split("|")[0] + ")",logName="spider")
+                        verbose(outputMode=logOutputMode,outputMessage="No suitable text was found, switching to default (" + self.date_format.split("|")[0] + ")",logName="spider")
                         to_use_date_format = self.date_format.split("|")[0]
 
-                    verbose(outputMode=logOutputMode, outputMessage="Article date: " + date_str, logName="spider")
+                    verbose(outputMode=logOutputMode, outputMessage="Product text: " + date_str, logName="spider")
                     break
 
                 except ValueError:
-                    verbose(outputMode=logOutputMode, outputMessage="This url doesn't have a date field for " + date_start_str_array[x], logName="spider")
+                    verbose(outputMode=logOutputMode, outputMessage="This url doesn't have a text field for " + date_start_str_array[x], logName="spider")
                     date_str = False
 
             if date_str == False:
@@ -700,95 +667,91 @@ class ?spider_name_1Spider(CrawlSpider):
 
             else:
                 found_date_flag = False
-                for y in range(len(self.timestamp_newyork_array)):
-                    tempFormatedDate = datetime.utcfromtimestamp(self.timestamp_newyork_array[y]).strftime(to_use_date_format).lower()
-                    tempFormatedDate = re.sub(r"^0", "", tempFormatedDate)
-                    verbose(outputMode=logOutputMode, outputMessage="To match date: " + tempFormatedDate, logName="spider")
-                    if tempFormatedDate in date_str.lower():
-                        found_date_flag = True
-                        self.dateIndex = y
+                tempFormatedDate = to_use_date_format
+                verbose(outputMode=logOutputMode, outputMessage="To match text: " + tempFormatedDate, logName="spider")
+                if tempFormatedDate.lower() in date_str.lower():
+                    found_date_flag = True
 
-                        verbose(outputMode=logOutputMode, outputMessage="Checking the url in the dont_grab_log table...", logName="spider")
-                        queryArgs = {
-                            "url": newUrl
-                            , "text_length": len(body_text_ascii)
-                        }
-                        query = 'SELECT add_dgl_url(%(url)s,%(text_length)s)'
-                        queryData = dbConnectionExecuteQuery(connectionObject=db_connection_dontgrablog, query=query, queryArgs=queryArgs, queryReference="spider_query_28",  errorOutputMode=logOutputMode)
-                        verbose(outputMode=logOutputMode, outputMessage="Done", logName="spider")
+                    # verbose(outputMode=logOutputMode, outputMessage="Checking the url in the dont_grab_log table...", logName="spider")
+                    # queryArgs = {
+                    #     "url": newUrl
+                    #     , "text_length": len(body_text_ascii)
+                    # }
+                    # query = 'SELECT add_dgl_url(%(url)s,%(text_length)s)'
+                    # queryData = dbConnectionExecuteQuery(connectionObject=db_connection_dontgrablog, query=query, queryArgs=queryArgs, queryReference="spider_query_28",  errorOutputMode=logOutputMode)
+                    # verbose(outputMode=logOutputMode, outputMessage="Done", logName="spider")
 
-                        if queryData[0][0][0] == False or queryData[0][0][0] == "False" or queryData[0][0][0] == 0:
+                    # if queryData[0][0][0] == False or queryData[0][0][0] == "False" or queryData[0][0][0] == 0:
+                    if True:
 
-                            verbose(outputMode=logOutputMode, outputMessage="The url has not been added to the table", logName="spider")
-                            verbose(outputMode=logOutputMode, outputMessage="Checking for login nodes...",logName="spider")
-                            if self.cookie_detection_node != "":
-                                loginwall_detected = "false"
-                                for node in self.cookie_detection_node.split("|"):
-                                    if node.strip() in body_text_ascii.strip():
-                                        loginwall_detected = "true"
-                                        verbose(outputMode=logOutputMode, outputMessage="The current url's body has a matching login node, '" + node + "'", logName="spider")
-                                        break
-                                    else:
-                                        verbose(outputMode=logOutputMode,outputMessage="No login node found for '" + node + "'", logName="spider")
-                            else:
-                                verbose(outputMode=logOutputMode, outputMessage="No login node found",logName="spider")
-                                loginwall_detected = "false"
-
-                            if loginwall_detected == "false":
-                                ep_file_flag = False
-                                ep_file_failed_flag = False
-                                while ep_file_flag == False:
-                                    try:
-                                        if ep_file_failed_flag == False:
-                                            verbose(outputMode=logOutputMode,outputMessage="Creating the ep_file...",logName="spider")
-                                            verbose(outputMode=logOutputMode, outputMessage="Using UTF-8 codec", logName="spider")
-                                            ep_file = self.create_epfile(self.generated_epfiles, newUrl, body_text_utf8, self.eprensa_domain_name, self.timestamp_madrid_array[self.dateIndex], self.timestamp_newyork_array[self.dateIndex], "false", "utf8")
-                                            ep_file_flag = True
-                                        else:
-                                            verbose(outputMode=logOutputMode,outputMessage="Creating the ep_file...",logName="spider")
-                                            verbose(outputMode=logOutputMode, outputMessage="Using ASCII codec",logName="spider")
-                                            ep_file = self.create_epfile(self.generated_epfiles, newUrl, body_text_ascii, self.eprensa_domain_name, self.timestamp_madrid_array[self.dateIndex], self.timestamp_newyork_array[self.dateIndex], "false", "ascii")
-                                            ep_file_flag = True
-
-                                    except Exception as e:
-                                        if ep_file_failed_flag == False:
-                                            verbose(outputMode=logOutputMode, outputMessage="UTF-8 codec has failed for URL '" + newUrl + "', switching to ASCII",logName="spider")
-                                            ep_file_failed_flag = True
-                                        else:
-                                            verbose(outputMode=logOutputMode,outputMessage="No codec worked for URL '" + newUrl + "', no ep_file was created",logName="spider")
-                                            ep_file_flag = True
-
-                                self.update(self.generated_epfiles + 1)
-                                verbose(outputMode=logOutputMode, outputMessage="Done", logName="spider")
-
-                                date_folder = datetime.utcfromtimestamp(self.timestamp_newyork_array[self.dateIndex]).strftime('%Y%m%d')
-                                query = "INSERT INTO epfiles_queue (ep_file_name ,date_folder, has_been_proccesed, is_in_process) VALUES ('" + ep_file + "','" + str(date_folder) + "', 0, 0)"
-                                dbConnectionExecuteQuery(connectionObject=db_connection_miscdb,query=query, queryArgs={},queryReference="spider_query_29",errorOutputMode=logOutputMode)
-
-                                if self.limitToSendArticlesToESCounterInSeconds == 0:
-                                    self.limitToSendArticlesToESCounterInSeconds = time.time()
-
-                                if self.limitToSendArticlesToESCounter >= self.limitToSendArticlesToES or (time.time() - self.limitToSendArticlesToESCounterInSeconds) > self.limitToSendArticlesToESInSeconds:
-                                    self.execute_repair_script()
-                                    self.limitToSendArticlesToESCounter = 0
-                                    self.limitToSendArticlesToESCounterInSeconds = time.time()
+                        #verbose(outputMode=logOutputMode, outputMessage="The url has not been added to the table", logName="spider")
+                        verbose(outputMode=logOutputMode, outputMessage="Checking for login nodes...",logName="spider")
+                        if self.cookie_detection_node != "":
+                            loginwall_detected = "false"
+                            for node in self.cookie_detection_node.split("|"):
+                                if node.strip() in body_text_ascii.strip():
+                                    loginwall_detected = "true"
+                                    verbose(outputMode=logOutputMode, outputMessage="The current url's body has a matching login node, '" + node + "'", logName="spider")
+                                    break
                                 else:
-                                    self.limitToSendArticlesToESCounter = (self.limitToSendArticlesToESCounter + 1)
+                                    verbose(outputMode=logOutputMode,outputMessage="No login node found for '" + node + "'", logName="spider")
+                        else:
+                            verbose(outputMode=logOutputMode, outputMessage="No login node found",logName="spider")
+                            loginwall_detected = "false"
 
+                        if loginwall_detected == "false":
+                            ep_file_flag = False
+                            ep_file_failed_flag = False
+                            while ep_file_flag == False:
+                                try:
+                                    if ep_file_failed_flag == False:
+                                        verbose(outputMode=logOutputMode,outputMessage="Creating the ep_file...",logName="spider")
+                                        verbose(outputMode=logOutputMode, outputMessage="Using UTF-8 codec", logName="spider")
+                                        ep_file = self.create_epfile(self.generated_epfiles, newUrl, body_text_utf8, self.cf_domain_name, "false", "utf8")
+                                        ep_file_flag = True
+                                    else:
+                                        verbose(outputMode=logOutputMode,outputMessage="Creating the ep_file...",logName="spider")
+                                        verbose(outputMode=logOutputMode, outputMessage="Using ASCII codec",logName="spider")
+                                        ep_file = self.create_epfile(self.generated_epfiles, newUrl, body_text_ascii, self.cf_domain_name, "false", "ascii")
+                                        ep_file_flag = True
+
+                                except Exception as e:
+                                    if ep_file_failed_flag == False:
+                                        verbose(outputMode=logOutputMode, outputMessage="UTF-8 codec has failed for URL '" + newUrl + "', switching to ASCII",logName="spider")
+                                        ep_file_failed_flag = True
+                                    else:
+                                        verbose(outputMode=logOutputMode,outputMessage="No codec worked for URL '" + newUrl + "', no ep_file was created",logName="spider")
+                                        ep_file_flag = True
+
+                            self.update(self.generated_epfiles + 1)
+                            verbose(outputMode=logOutputMode, outputMessage="Done", logName="spider")
+
+                            query = "INSERT INTO epfiles_queue (ep_file_name ,date_folder, has_been_proccesed, is_in_process) VALUES ('" + ep_file + "',CURRENT_DATE, 0, 0)"
+                            dbConnectionExecuteQuery(connectionObject=db_connection_miscdb,query=query, queryArgs={},queryReference="spider_query_29",errorOutputMode=logOutputMode)
+
+                            if self.limitToSendArticlesToESCounterInSeconds == 0:
+                                self.limitToSendArticlesToESCounterInSeconds = time.time()
+
+                            if self.limitToSendArticlesToESCounter >= self.limitToSendArticlesToES or (time.time() - self.limitToSendArticlesToESCounterInSeconds) > self.limitToSendArticlesToESInSeconds:
+                                self.execute_repair_script()
+                                self.limitToSendArticlesToESCounter = 0
+                                self.limitToSendArticlesToESCounterInSeconds = time.time()
                             else:
-                                self.remove_url_from_visited_url_list(newUrl)
-                                if close_spider_called == False:
-                                    self.diasble_spider_due_cookies(response.url)
+                                self.limitToSendArticlesToESCounter = (self.limitToSendArticlesToESCounter + 1)
 
                         else:
-                            verbose(outputMode=logOutputMode, outputMessage="The url has already been added to the table, skipping", logName="spider")
-                            self.datedUrls = self.datedUrls + 1
-                        break
+                            self.remove_url_from_visited_url_list(newUrl)
+                            if close_spider_called == False:
+                                self.diasble_spider_due_cookies(response.url)
+
                     else:
-                        verbose(outputMode=logOutputMode, outputMessage="Article doesn't match the date " + tempFormatedDate, logName="spider")
+                        verbose(outputMode=logOutputMode, outputMessage="The url has already been added to the table, skipping", logName="spider")
+                        self.datedUrls = self.datedUrls + 1
+                else:
+                    verbose(outputMode=logOutputMode, outputMessage="Product doesn't match the text " + tempFormatedDate, logName="spider")
 
                 if found_date_flag == False:
-                    verbose(outputMode=logOutputMode, outputMessage="There's no date match for this article, skipping",logName="spider")
+                    verbose(outputMode=logOutputMode, outputMessage="There's no text match for this product, skipping",logName="spider")
                     self.datedUrls = self.datedUrls + 1
 
                 valid_url_found_in = self.clean_url(response.request.headers.get('Referer', None).decode('utf-8'))

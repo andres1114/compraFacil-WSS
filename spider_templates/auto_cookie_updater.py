@@ -164,7 +164,7 @@ email_html_body += "<br/>"
 email_html_body += "<p>La spider sera habilitada nuevamente una vez el script 'parse_cookie_json.php' sea ejecutado y se actualizen las cookies</p>"
 
 functions.verbose(outputMode=logOutputMode, outputMessage="Sending the email...", logName="auto_cookie_updater_ID_" + str(domain_id))
-functions.send_email(email_subject=email_subject, email_from=email_sender, email_to=email_recipients,email_html_message=email_html_body)
+#functions.send_email(email_subject=email_subject, email_from=email_sender, email_to=email_recipients,email_html_message=email_html_body)
 functions.verbose(outputMode=logOutputMode, outputMessage="Done", logName="auto_cookie_updater_ID_" + str(domain_id))
 # <email block>
 
