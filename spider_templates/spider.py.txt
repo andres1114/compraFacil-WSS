@@ -301,7 +301,7 @@ class ?spider_name_1(CrawlSpider):
         ep_file_content = ep_file_content + "\n"
         ep_file_content = ep_file_content + "Payprotected:" + payprotected + ":Payprotected"
         ep_file_content = ep_file_content + "\n"
-        ep_file_content = ep_file_content + "DomainId:" + self.domainId + ":DomainId"
+        ep_file_content = ep_file_content + "DomainId:" + str(self.domainId) + ":DomainId"
         ep_file_content = ep_file_content + "\n"
         ep_file_content = ep_file_content + "\n"
         ep_file_content = ep_file_content + "\n"
