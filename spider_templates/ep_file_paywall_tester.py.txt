@@ -294,7 +294,7 @@ if queryData[1] > 0:
         verbose(outputMode=logOutputMode, outputMessage="storage2's response: " + str(resp), logName="ep_file_paywall")
 
         verbose(outputMode=logOutputMode,outputMessage="Executing repair mode for page grab to index the epfile...", logName="ep_file_paywall")
-        cmd = 'php /var/development/compraFacil-ep_file_processor/main.php 2>&1'
+        cmd = 'php /var/www/compraFacil-ep_file_processor/main.php 2>&1'
         verbose(outputMode=logOutputMode, outputMessage="Used cmd: " + cmd, logName="ep_file_paywall")
         resp = subprocess.check_output(cmd, shell=True)
         verbose(outputMode=logOutputMode, outputMessage="epbatch011's response: " + str(resp), logName="ep_file_paywall")
