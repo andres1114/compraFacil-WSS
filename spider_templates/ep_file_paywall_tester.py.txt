@@ -113,7 +113,7 @@ proxy_port = "222"
 proxy_auth = "eprensa:tecnicos"
 
 verbose(outputMode=logOutputMode, outputMessage="Creating the database connections...", logName="ep_file_paywall")
-db_connection_mysql = createDbConnection(db_type='mysql', db_host='192.168.10.19', db_user='root',db_pass='admin', db_name='compraFacil')
+db_connection_mysql = createDbConnection(db_type='mysql', db_host='192.168.10.14', db_user='root',db_pass='admin', db_name='compraFacil')
 db_connection_epfilelog = createDbConnection(db_type='sqlite',db_host=re.sub(r"([^\/]+$)", "", current_script_dir) + log_database_filename, db_user='',db_pass='', db_name='')
 db_connection_miscdb = createDbConnection(db_type='sqlite',db_host=re.sub(r"([^\/]+$)", "", current_script_dir) + misc_database_filename, db_user='',db_pass='', db_name='')
 verbose(outputMode=logOutputMode, outputMessage="Done", logName="ep_file_paywall")
@@ -294,10 +294,10 @@ if queryData[1] > 0:
         verbose(outputMode=logOutputMode, outputMessage="storage2's response: " + str(resp), logName="ep_file_paywall")
 
         verbose(outputMode=logOutputMode,outputMessage="Executing repair mode for page grab to index the epfile...", logName="ep_file_paywall")
-        cmd = 'ssh -t -o StrictHostKeyChecking=no tsg@epbatch011 "php /web/eprensa/scripts/page_grab/page_grab.php es repair ' + str(date_folder) + '/' + epfile + ' noforce 2>&1"'
+        cmd = 'php /var/development/compraFacil-ep_file_processor/main.php 2>&1'
         verbose(outputMode=logOutputMode, outputMessage="Used cmd: " + cmd, logName="ep_file_paywall")
-        #resp = subprocess.check_output(cmd, shell=True)
-        #verbose(outputMode=logOutputMode, outputMessage="epbatch011's response: " + str(resp), logName="ep_file_paywall")
+        resp = subprocess.check_output(cmd, shell=True)
+        verbose(outputMode=logOutputMode, outputMessage="epbatch011's response: " + str(resp), logName="ep_file_paywall")
 
         queryArgs = (epfile_id,)
         query = "DELETE FROM epfiles_queue WHERE id = ?"
