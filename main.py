@@ -36,7 +36,7 @@ commandResponse = subprocess.check_output(shell_command, shell=True).decode("utf
 
 if int(commandResponse) > 2:
     functions.verbose(outputMode=logOutputMode, outputMessage="Script is already running, exiting ("+commandResponse+")",logName="main")
-    sys.exit("SCRIPT_ALREADY_RUNNING")
+    #sys.exit("SCRIPT_ALREADY_RUNNING")
 
 functions.verbose(outputMode=logOutputMode, outputMessage="Creating the DB connection objects...", logName="main")
 #Create the databas connection objects
