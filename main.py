@@ -123,7 +123,7 @@ if len(queryData[0]) > 0:
                 else:
                     execute_spider = True
 
-            shell_command = "cd " + current_dir_path + "/" + spiders_directory_name + "/" + spider_name + "/; scrapy crawl " + spider_name + " -a log_output=" + logOutputArg + " 2>/dev/null"
+            shell_command = "cd " + current_dir_path + "/" + spiders_directory_name + "/" + spider_name + "/; scrapy crawl " + spider_name + " -a log_output=" + logOutputArg + " & 2>/dev/null &"
 
             functions.verbose(outputMode=logOutputMode, outputMessage="Launching spider " + spider_name + " in directory '" + current_dir_path + "/" + spiders_directory_name + "'", logName="main")
             functions.verbose(outputMode=logOutputMode, outputMessage="Command to use: '" + shell_command + "'", logName="main")
