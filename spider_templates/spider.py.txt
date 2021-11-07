@@ -438,7 +438,7 @@ class ?spider_name_1(CrawlSpider):
 
     daysToDeletedVisitedUrlsLog = 7
     scrapedPages = 0
-    maxAmountOfSecondsPassed = 3540
+    maxAmountOfSecondsPassed = 14400
     limitToSendArticlesToES = 10
     limitToSendArticlesToESInSeconds = 300
     limitToSendArticlesToESCounter = 0
