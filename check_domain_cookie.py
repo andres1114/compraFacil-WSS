@@ -11,7 +11,7 @@ import time
 #Get the argument id
 domain_id = sys.argv[1]
 
-if not 'domain_id' in locals() :
+if not 'domain_id' in locals():
     errorMessage = "ERR_NO_ARGUMENT_FOUND the argument 'domain_id' was not found"
     functions.verbose(outputMode=0, outputMessage=errorMessage, logName="main")
     sys.exit(errorMessage)
@@ -34,16 +34,16 @@ else:
 current_script_dir = os.path.dirname(os.path.abspath(__file__))
 spiders_directory_name = "spiders"
 cookie_file_filename = "cookies_holder.json"
-email_sender = "info@eprensa.com"
-email_recipients = ["apzapata@eprensa.com", "vduran@eprensa.com"]
+email_sender = "polako_1114@hotmail.com"
+email_recipients = ["polako_1114@hotmail.com"]
 
 #Create the databas connection objects
-db_connection_eppostgres = db_connection.createDbConnection(db_type='postgres', db_host='rwpgsql', db_user='tsg', db_pass='newPOST53', db_name='eprensa')
+db_connection_mysql = db_connection.createDbConnection(db_type='mysql', db_host='192.168.10.12', db_user='root', db_pass='admin', db_name='compraFacil')
 
 # check the cookies status
 queryArgs = {"domain": domain_id}
-query = "SELECT scrapy_headers.id, scrapy_headers.domain_id, scrapy_headers.header_type, scrapy_headers.header_name, scrapy_headers.header_value, scrapy_headers.header_status,  scrapy_headers.created_at, scrapy_headers.active, scrapy_headers.days_until_expiration, domains.domain FROM scrapy_headers INNER JOIN domains ON scrapy_headers.domain_id = domains.id WHERE scrapy_headers.domain_id = %(domain)s AND scrapy_headers.header_type IN (1,3) AND scrapy_headers.header_status NOT LIKE '%%error%%' AND scrapy_headers.active IS TRUE"
-queryData = db_connection.dbConnectionExecuteQuery(connectionObject=db_connection_eppostgres, query=query,queryArgs=queryArgs, queryReference="check_domain_cookie_01",errorOutputMode=logOutputMode)
+query = "SELECT scrapy_headers.id, scrapy_headers.domain_id, scrapy_headers.header_type, scrapy_headers.header_name, scrapy_headers.header_value, scrapy_headers.header_status,  scrapy_headers.created_at, scrapy_headers.active, scrapy_headers.days_until_expiration, almacen.nombre_almacen FROM scrapy_headers INNER JOIN almacen ON scrapy_headers.domain_id = almacen.id WHERE scrapy_headers.domain_id = %(domain)s AND scrapy_headers.header_type IN (1,3) AND scrapy_headers.header_status NOT LIKE '%%error%%' AND scrapy_headers.active IS TRUE"
+queryData = db_connection.dbConnectionExecuteQuery(connectionObject=db_connection_mysql, query=query,queryArgs=queryArgs, queryReference="check_domain_cookie_01",errorOutputMode=logOutputMode)
 
 # pos 0 = id
 # pos 1 = domain_id
@@ -86,12 +86,12 @@ if len(queryData[0]) > 0:
             # Update the scrapy spider
             queryArgs = {"domain_id": domain_id}
             query = "UPDATE scrapy_spiders SET spider_status = 'ERROR: cookies have expired', active = FALSE WHERE domain_id = %(domain_id)s"
-            db_connection.dbConnectionExecuteQuery(connectionObject=db_connection_eppostgres, query=query,queryArgs=queryArgs, queryReference="check_domain_cookie_02",errorOutputMode=logOutputMode)
+            db_connection.dbConnectionExecuteQuery(connectionObject=db_connection_mysql, query=query,queryArgs=queryArgs, queryReference="check_domain_cookie_02",errorOutputMode=logOutputMode)
 
             # Update the scrapy header
             queryArgs = {"domain_id": domain_id}
             query = "UPDATE scrapy_headers SET header_status = 'ERROR: cookie has expired', active = FALSE WHERE domain_id = %(domain_id)s AND header_type = (1,3)"
-            db_connection.dbConnectionExecuteQuery(connectionObject=db_connection_eppostgres, query=query,queryArgs=queryArgs, queryReference="check_domain_cookie_03",errorOutputMode=logOutputMode)
+            db_connection.dbConnectionExecuteQuery(connectionObject=db_connection_mysql, query=query,queryArgs=queryArgs, queryReference="check_domain_cookie_03",errorOutputMode=logOutputMode)
 
             # Remove the cookie from the spider folder
             try:
@@ -118,7 +118,7 @@ if len(queryData[0]) > 0:
             email_html_body += "<br/>"
             email_html_body += "<p>La spider ha sido desabilitada y no se ejcutara mas hasta que la cookie sea actualizada</p>"
 
-            functions.send_email(email_subject=email_subject, email_from=email_sender, email_to=email_recipients,email_html_message=email_html_body)
+            #functions.send_email(email_subject=email_subject, email_from=email_sender, email_to=email_recipients,email_html_message=email_html_body)
             # </email block>
 
             print("0", end="")
