@@ -118,7 +118,7 @@ log_database_filename = "epfile_log.sqlite3"
 epfile_paywall_tester_filename = "ep_file_paywall_tester.py"
 epfile_foldername = "temp_ep_files"
 
-db_connection_mysql = createDbConnection(db_type='mysql', db_host='192.168.10.18', db_user='root',db_pass='admin', db_name='compraFacil')
+db_connection_mysql = createDbConnection(db_type='mysql', db_host='192.168.10.17', db_user='root',db_pass='admin', db_name='compraFacil')
 db_connection_epfilelog = createDbConnection(db_type='sqlite',db_host=current_script_dir + "/" + log_database_filename, db_user='',db_pass='', db_name='')
 db_connection_miscdb = createDbConnection(db_type='sqlite',db_host=current_script_dir + "/" + misc_database_filename, db_user='',db_pass='', db_name='')
 

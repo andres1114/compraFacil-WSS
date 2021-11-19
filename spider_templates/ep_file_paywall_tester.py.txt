@@ -113,7 +113,7 @@ proxy_port = "222"
 proxy_auth = "eprensa:tecnicos"
 
 verbose(outputMode=logOutputMode, outputMessage="Creating the database connections...", logName="ep_file_paywall")
-db_connection_mysql = createDbConnection(db_type='mysql', db_host='192.168.10.18', db_user='root',db_pass='admin', db_name='compraFacil')
+db_connection_mysql = createDbConnection(db_type='mysql', db_host='192.168.10.17', db_user='root',db_pass='admin', db_name='compraFacil')
 db_connection_epfilelog = createDbConnection(db_type='sqlite',db_host=re.sub(r"([^\/]+$)", "", current_script_dir) + log_database_filename, db_user='',db_pass='', db_name='')
 db_connection_miscdb = createDbConnection(db_type='sqlite',db_host=re.sub(r"([^\/]+$)", "", current_script_dir) + misc_database_filename, db_user='',db_pass='', db_name='')
 verbose(outputMode=logOutputMode, outputMessage="Done", logName="ep_file_paywall")
