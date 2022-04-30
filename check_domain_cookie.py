@@ -38,7 +38,7 @@ email_sender = "polako_1114@hotmail.com"
 email_recipients = ["polako_1114@hotmail.com"]
 
 #Create the databas connection objects
-db_connection_mysql = db_connection.createDbConnection(db_type='mysql', db_host='192.168.10.17', db_user='root', db_pass='admin', db_name='compraFacil')
+db_connection_mysql = db_connection.createDbConnection(db_type='mysql', db_host='192.168.18.24', db_user='root', db_pass='admin', db_name='compraFacil')
 
 # check the cookies status
 queryArgs = {"domain": domain_id}
