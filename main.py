@@ -40,7 +40,7 @@ if int(commandResponse) > 2:
 
 functions.verbose(outputMode=logOutputMode, outputMessage="Creating the DB connection objects...", logName="main")
 #Create the databas connection objects
-db_connection_mysql = db_connection.createDbConnection(db_type='mysql', db_host='192.168.18.24', db_user='root', db_pass='admin', db_name='compraFacil')
+db_connection_mysql = db_connection.createDbConnection(db_type='mysql', db_host='softwareaez.lol', db_user='softwaez_rw', db_pass='BDme2Ne}Pll-', db_name='softwaez_comprafacil')
 functions.verbose(outputMode=logOutputMode, outputMessage="Done", logName="main")
 
 functions.verbose(outputMode=logOutputMode, outputMessage="Checking if any spider's cookies can be auto-generated...", logName="main")
