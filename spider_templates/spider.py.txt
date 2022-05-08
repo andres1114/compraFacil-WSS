@@ -122,7 +122,7 @@ db_connection_mysql = createDbConnection(db_type='mysql', db_host='softwareaez.l
 db_connection_epfilelog = createDbConnection(db_type='sqlite',db_host=current_script_dir + "/" + log_database_filename, db_user='',db_pass='', db_name='')
 db_connection_miscdb = createDbConnection(db_type='sqlite',db_host=current_script_dir + "/" + misc_database_filename, db_user='',db_pass='', db_name='')
 
-limitNumberOfExecutionsBeforeUpdatingSitemap = 100
+limitNumberOfExecutionsBeforeUpdatingSitemap = 5
 spider_name = '?spider_name_1'
 
 close_spider_called = False
@@ -445,8 +445,8 @@ class ?spider_name_1(CrawlSpider):
     limitToSendArticlesToESCounterInSeconds = 0
     limitToCloseSpiderInSeconds = time.time()
 
-    limitNumberOfExecutionsBeforeUpdatingSitemap = 200
-    maxSitemapTTL = 100
+    limitNumberOfExecutionsBeforeUpdatingSitemap = 5
+    maxSitemapTTL = 25
 
     #Set the spider's settings
     custom_settings = {
